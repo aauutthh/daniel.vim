@@ -25,30 +25,45 @@ let g:daniel_vim_loaded = 1
 "
 " 安装本插件
 "
-"set rtp+=~/.vim/daniel
-"if empty(glob('~/.vim/daniel.vim'))
-"    slilen !git clone https://github.com/aauutthh/daniel.vim ~/.vim/daniel
-"    source ~/.vim/autoload/daniel.vim
-"    call daniel#PlugManagerInstall()
-"    finish
-"endif
-"call daniel#VimConfig(1)
+" 在~/.vimrc开头中加入以下内容:
 "
-" git clone https://github.com/aauutthh/daniel.vim ~/.vim/pack/daniel/start/daniel
-" 在~/.vimrc中加入以下内容(二选一):
+" set rtp+=~/.vim/daniel
 "
-" 方案一
-"   call daniel#VimConfig(1)
+" if empty(glob('~/.vim/daniel'))
 "
-" 方案二
-"   call plug#begin()"
-"   call daniel#PlugIns()"
-"   call plug#end()"
-"   call daniel#VimConfig(0)
+"     silent !git clone https://github.com/aauutthh/daniel.vim ~/.vim/daniel
+"
+"     if v:shell_error==0
+"
+"         call daniel#PlugManagerInstall()
+"
+"     endif
+"
+"     finish
+"
+" endif
+"
+" call daniel#VimConfig(1)
 "
 " 保存关闭后执行:
+"
 " vim +"PlugInstall"
 "
+" 有时可能这一句:
+"
+"   call daniel#VimConfig(1)
+"
+" 要替换成下面:
+"
+"   call plug#begin()
+"
+"   call daniel#PlugIns()
+"
+"   call plug#end()
+"
+"   call daniel#VimConfig(0)
+"
+
 
 ""
 " 自动安装vim-plug插件管理器
@@ -68,7 +83,6 @@ function! daniel#PlugIns()
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'vim-airline/vim-airline'
-"Plug 'aauutthh/deb_config' , {'rtp': 'daniel.vim'}
 Plug 'junegunn/seoul256.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'junegunn/limelight.vim'

@@ -20,8 +20,43 @@ INTRODUCTION                                                    *daniel-intro*
 
 安装本插件
 
-git clone https://github.com/aauutthh/daniel.vim
-~/.vim/pack/daniel/start/daniel vim +"PlugInstall"
+在~/.vimrc开头中加入以下内容:
+
+set rtp+=~/.vim/daniel
+
+if empty(glob('~/.vim/daniel'))
+
+    silent !git clone https://github.com/aauutthh/daniel.vim ~/.vim/daniel
+
+    if v:shell_error==0
+
+        call daniel#PlugManagerInstall()
+
+    endif
+
+    finish
+
+endif
+
+call daniel#VimConfig(1)
+
+保存关闭后执行:
+
+vim +"PlugInstall"
+
+有时可能这一句:
+
+  call daniel#VimConfig(1)
+
+要替换成下面:
+
+  call plug#begin()
+
+  call daniel#PlugIns()
+
+  call plug#end()
+
+  call daniel#VimConfig(0)
 
 
 
