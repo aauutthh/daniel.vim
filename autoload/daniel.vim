@@ -168,6 +168,7 @@ function! daniel#VimConfig(doInstall,...)
   set tags=./tags,tags "tags file searching list
   
   call daniel#ForPythonConfig() 
+  call daniel#ForGolangConfig() 
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -267,6 +268,34 @@ function! daniel#TagListConfig()
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim :Tlist
 endfunction "}}}
 
+function! s:GOPATH_Add_project_dir()
+"{{{
+" 从当前路径向上查找.gotop文件,作为根路径
+let l:top=findfile(".gotop",".;")
+if l:top==""
+    " 从当前路径向上查找src目录 , src与.gotop同级
+    let l:top=finddir("src",".;")
+endif
+if l:top==""
+  return 
+endif
+
+" 取目录
+let l:top = fnamemodify(l:top, ":h")
+let l:paths=split($GOPATH,":")
+if index(l:paths, l:top) >0 
+  return 
+endif
+
+exec "GoPath ".l:top . ":" . $GOPATH
+
+endfunction "}}}
+
+function! daniel#ForGolangConfig() 
+"{{{
+echom "golang config"
+autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
+endfunction "}}}
 
 function! daniel#ForPythonConfig() 
 "{{{
