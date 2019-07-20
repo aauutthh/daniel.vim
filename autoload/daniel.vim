@@ -25,8 +25,28 @@ let g:daniel_vim_loaded = 1
 "
 " 安装本插件
 "
-" git clone https://github.com/aauutthh/daniel.vim -C ~/.vim/pack
+"set rtp+=~/.vim/daniel
+"if empty(glob('~/.vim/daniel.vim'))
+"    slilen !git clone https://github.com/aauutthh/daniel.vim ~/.vim/daniel
+"    source ~/.vim/autoload/daniel.vim
+"    call daniel#PlugManagerInstall()
+"    finish
+"endif
+"call daniel#VimConfig(1)
 "
+" git clone https://github.com/aauutthh/daniel.vim ~/.vim/pack/daniel/start/daniel
+" 在~/.vimrc中加入以下内容(二选一):
+"
+" 方案一
+"   call daniel#VimConfig(1)
+"
+" 方案二
+"   call plug#begin()"
+"   call daniel#PlugIns()"
+"   call plug#end()"
+"   call daniel#VimConfig(0)
+"
+" 保存关闭后执行:
 " vim +"PlugInstall"
 "
 
@@ -73,7 +93,7 @@ endfunction "}}}
 function! daniel#InstallPlugIns()
 "{{{
 if exists("g:plugs") && len(g:plugs) > 0 
-  call daniel#recallerr_hint()
+  call s:recallerr_hint()
   return
 endif
   call plug#begin('~/.vim/plugged')

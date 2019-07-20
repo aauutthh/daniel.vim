@@ -20,9 +20,8 @@ INTRODUCTION                                                    *daniel-intro*
 
 安装本插件
 
-git clone https://github.com/aauutthh/daniel.vim -C ~/.vim/pack
-
-vim +"PlugInstall"
+git clone https://github.com/aauutthh/daniel.vim
+~/.vim/pack/daniel/start/daniel vim +"PlugInstall"
 
 
 

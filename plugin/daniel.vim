@@ -11,4 +11,6 @@ let g:daniel_vim_pluged=1
 "endif
 "
 
-call daniel#VimConfig(1)
+""
+" 这个调用需要写到~/.vimrc中
+" call daniel#VimConfig(1)
