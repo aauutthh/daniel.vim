@@ -207,7 +207,9 @@ function! daniel#CommondConfig()
   end
   let &g:undodir=s:Paths["tmpdir"] 
   let &g:backupdir=s:Paths["tmpdir"]. "," .&g:backupdir
-  let &g:directory=s:Paths["tmpdir"]. "," .&g:directory
+  " directory 用于swapfile , 当结尾是'//'时，使用绝对路径，避免swapfile collisions冲突
+  " 用:sw 查看当前的swapfile
+  let &g:directory=s:Paths["tmpdir"]. "/," .&g:directory
   
   set nobackup
   set autochdir
