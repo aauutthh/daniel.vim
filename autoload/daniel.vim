@@ -80,21 +80,21 @@ endfunction "}}}
 " daniel使用的PlugIns, 该函数需要在 |plug#begin| |plug#end| 之间使用，可参考 |daniel#InstallPlugIns|
 function! daniel#PlugIns()
 "{{{
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'vim-airline/vim-airline'
-Plug 'junegunn/seoul256.vim'
-Plug 'junegunn/goyo.vim'
-Plug 'junegunn/limelight.vim'
-Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
-Plug 'burnettk/vim-angular'
-Plug 'pangloss/vim-javascript'
-Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
-Plug 'davidhalter/jedi-vim'
-Plug 'vim-scripts/taglist.vim'
-Plug 'godlygeek/tabular' " 对齐工具 Tab /=
-"Plug 'vim-scripts/DoxygenToolkit.vim'
-Plug 'alpertuna/vim-header'
+  Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+  Plug 'junegunn/fzf.vim'
+  Plug 'vim-airline/vim-airline'
+  Plug 'junegunn/seoul256.vim'
+  Plug 'junegunn/goyo.vim'
+  Plug 'junegunn/limelight.vim'
+  Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+  Plug 'burnettk/vim-angular'
+  Plug 'pangloss/vim-javascript'
+  Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
+  Plug 'davidhalter/jedi-vim'
+  Plug 'vim-scripts/taglist.vim'
+  Plug 'godlygeek/tabular' " 对齐工具 Tab /=
+  "Plug 'vim-scripts/DoxygenToolkit.vim'
+  Plug 'alpertuna/vim-header'
 endfunction "}}}
 
 ""
@@ -163,12 +163,9 @@ function! daniel#VimConfig(doInstall,...)
   " TagList config
   call daniel#TagListConfig() 
   
-  " ctags
-  set tc=ignore " tagcase ignore case
-  set tags=./tags,tags "tags file searching list
-  
   call daniel#ForPythonConfig() 
   call daniel#ForGolangConfig() 
+  call daniel#ForClangConfig() 
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -262,7 +259,12 @@ function! daniel#TagListConfig()
   " let g:Tlist_Use_Right_Window = 1 
   
   " Tag List 查找tag的位置默认是当前路径下的tags
-  " set tags+=/usr/include/python2.7/tags
+  " 增加向上查找tags, ';'表示向上查找, tags变量是","分隔的
+
+  " ctags
+  set tc=ignore " tagcase ignore case
+  set tags=./tags; "tags file searching list
+  
   
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim :Tlist
@@ -270,31 +272,35 @@ endfunction "}}}
 
 function! s:GOPATH_Add_project_dir()
 "{{{
-" 从当前路径向上查找.gotop文件,作为根路径
-let l:top=findfile(".gotop",".;")
-if l:top==""
-    " 从当前路径向上查找src目录 , src与.gotop同级
-    let l:top=finddir("src",".;")
-endif
-if l:top==""
-  return 
-endif
+  " 从当前路径向上查找.gotop文件,作为根路径
+  let l:top=findfile(".gotop",".;")
+  if l:top==""
+      " 从当前路径向上查找src目录 , src与.gotop同级
+      let l:top=finddir("src",".;")
+  endif
+  if l:top==""
+      return 
+  endif
+  
+  " 取目录
+  let l:top = fnamemodify(l:top, ":h")
+  let l:paths=split($GOPATH,":")
+  if index(l:paths, l:top) >0 
+      return 
+  endif
 
-" 取目录
-let l:top = fnamemodify(l:top, ":h")
-let l:paths=split($GOPATH,":")
-if index(l:paths, l:top) >0 
-  return 
-endif
+  exec "GoPath ".l:top . ":" . $GOPATH
 
-exec "GoPath ".l:top . ":" . $GOPATH
+endfunction "}}}
 
+function! daniel#ForClangConfig() 
+"{{{
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
 endfunction "}}}
 
 function! daniel#ForGolangConfig() 
 "{{{
-echom "golang config"
-autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
+  autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
 endfunction "}}}
 
 function! daniel#ForPythonConfig() 
