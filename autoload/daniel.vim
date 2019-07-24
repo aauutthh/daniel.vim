@@ -95,6 +95,13 @@ function! daniel#PlugIns()
   Plug 'godlygeek/tabular' " 对齐工具 Tab /=
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
+
+  " 自动生成tag文件, 自动查找项目顶层目录
+  Plug 'ludovicchabant/vim-gutentags'
+
+  " :NERDTreeToggle 打开文件浏览器
+  Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
+
 endfunction "}}}
 
 ""
@@ -160,8 +167,8 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#PlugManagerInstall()
   call daniel#CommondConfig()
   
-  " TagList config
-  call daniel#TagListConfig() 
+  " Tag config
+  call daniel#TagConfig() 
   
   call daniel#ForPythonConfig() 
   call daniel#ForGolangConfig() 
@@ -198,6 +205,11 @@ function! daniel#CommondConfig()
   set expandtab
   set shiftwidth=4
   set shiftround
+
+  " ctrl-w_} 打开预览窗口， 窗口大小
+  " :pc "preview close
+  set previewheight=4
+  
   
   if has('unix') 
     let s:Paths["tmpdir"] = "/tmp/vim_".$USER."/"
@@ -246,7 +258,8 @@ function! daniel#CommondConfig()
 endfunction "}}}
 
 " Tag list config (ctags)
-function! daniel#TagListConfig() 
+" Tag Config
+function! daniel#TagConfig() 
 "{{{
   " 设定ctags程序位置
   let g:Tlist_Ctags_Cmd = "/usr/bin/ctags"
@@ -265,11 +278,35 @@ function! daniel#TagListConfig()
 
   " ctags
   set tc=ignore " tagcase ignore case
-  set tags=./tags; "tags file searching list
+  set tags=./.tags; "tags file searching list
   
-  
+  "{{{ gutentags 自动生成tags 文件
+  " 设置顶层目录标志文件, 自动查找项目顶层
+  let g:gutentags_project_root = ['Makefile','.gutctags','.root','.top']
+
+  " gutctags文件内容与ctags文件一样 man ctags, gutentags插件会把这个文件中的内容传递给ctags作为参数
+  " 参考格式:
+  " --exclude=*back
+  " --exclude=^\.*
+  " --exclude=*bin*
+
+  " 设置cache目录有助于集中管理tags, 但是tag搜索需要更多配置，gutentags没有提供项目tags名称的接口
+  "let g:gutentags_cache_dir="~/ctags"
+
+  " 为使文件不污染svn目录，使用'.'前缀
+  let g:gutentags_ctags_tagfile = '.tags'
+  "}}}
+
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim :Tlist
+endfunction "}}}
+
+function! s:Project_vimrc()
+"{{{
+
+  let l:topvimrc=findfile(".vimrc",".;")
+  exec "source ".l:topvimrc
+
 endfunction "}}}
 
 function! s:GOPATH_Add_project_dir()
@@ -298,6 +335,7 @@ endfunction "}}}
 function! daniel#ForClangConfig() 
 "{{{
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :call s:Project_vimrc()
 endfunction "}}}
 
 function! daniel#ForGolangConfig() 
