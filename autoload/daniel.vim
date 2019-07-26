@@ -83,6 +83,7 @@ function! daniel#PlugIns()
   Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
   Plug 'junegunn/fzf.vim'
   Plug 'vim-airline/vim-airline'
+  Plug 'vim-airline/vim-airline-themes'
   Plug 'junegunn/seoul256.vim'
   Plug 'junegunn/goyo.vim'
   Plug 'junegunn/limelight.vim'
@@ -92,7 +93,7 @@ function! daniel#PlugIns()
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
   Plug 'vim-scripts/taglist.vim'
-  Plug 'godlygeek/tabular' " 对齐工具 Tab /=
+  Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
 
@@ -108,6 +109,12 @@ function! daniel#PlugIns()
   " ctrl-w_o 放大一个窗口，两次输入回复窗口。 原生的only window无法恢复窗口
   Plug 'vim-scripts/ZoomWin'
 
+  ""
+  " 增加额外的配色方案
+  " 通过colorscheme <name>来设置
+  Plug 'flazz/vim-colorschemes'
+
+  Plug 'morhetz/gruvbox'
 
 endfunction "}}}
 
@@ -174,6 +181,7 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#PlugManagerInstall()
   call daniel#CommondConfig()
   
+  call daniel#ForAirlineConfig () 
   " Tag config
   call daniel#TagConfig() 
   
@@ -181,6 +189,9 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForGolangConfig() 
   call daniel#ForClangConfig() 
   call daniel#ForYCMConfig () 
+  call daniel#ForTernJsConfig() 
+
+  autocmd FileType * call daniel#FileTypeChange()
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -189,6 +200,11 @@ function! daniel#VimConfig(doInstall,...)
   if a:doInstall
     call daniel#InstallPlugIns()
   endif
+
+  " themes选择必须在插件适配后才可以
+  "colo evening " 部分终端会变成灰色  
+  "let g:gruvbox_termcolors=16
+  colo gruvbox
 
 endfunction "}}}
 
@@ -204,10 +220,8 @@ function! daniel#CommondConfig()
   set nocompatible
   set fileformat=unix
   set nu  " number
-  set go=e
-  "colo evening " 部分终端会变成灰色  
   set noautoindent
-  set paste
+  set nopaste
   set noai
   set tabstop=2
   set expandtab
@@ -218,6 +232,8 @@ function! daniel#CommondConfig()
   " :pc "preview close
   set previewheight=4
   
+  "guioptions
+  "set go=e
   
   if has('unix') 
     let s:Paths["tmpdir"] = "/tmp/vim_".$USER."/"
@@ -377,6 +393,40 @@ function! daniel#ForCLikeConfig()
 "{{{
 endfunction "}}}
 
+""
+" 参考这里配置
+" http://ternjs.net/doc/manual.html#configuration
+" 1. 语义树
+" ~/.vim/plugged/tern_for_vim/node_modules/tern/defs/chai.json
+" 在defs目录中的这些文件，定义一些语法元素，用于一些builtin
+" type或没有原码但需要提示的场景
+"
+" 2. Project configuration 项目配置
+" 在项目顶层放置一个`.tern-project`这样的json文件
+" :help tern  
+function! daniel#ForTernJsConfig() 
+"{{{
+	  let s:tern_project_code='{
+\      "libs": [
+\        "browser",
+\        "jquery"
+\      ],
+\      "loadEagerly": [
+\        "importantfile.js"
+\      ],
+\      "plugins": {
+\        "requirejs": {
+\          "baseURL": "./",
+\          "paths": {}
+\        }
+\      }
+\    }'
+
+  command TernProjectFileCreate call writefile([json_encode(json_decode(s:tern_project_code))],".tern-project") |
+              \  echom "save .tern-project to ".getcwd()
+
+endfunction "}}}
+
 function! daniel#DoxygenConfig() 
 "{{{
   "let g:DoxygenToolkit_briefTag_pre="@Synopsis  "
@@ -389,6 +439,8 @@ function! daniel#DoxygenConfig()
   let g:DoxygenToolkit_licenseTag="(C) Copyright ". strftime("%Y")
 endfunction "}}}
 
+""
+" for vim-header
 function! daniel#VimHeaderConfig() 
 "{{{
   let g:header_auto_add_header = 0
@@ -432,5 +484,59 @@ function! daniel#ForYCMConfig ()
   let l:extra_conf = findfile(".ycm_extra_conf.py","./;,~/.vim/,~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/")
   if l:extra_conf != ""
       let g:ycm_global_ycm_extra_conf=l:extra_conf
+  endif
+endfunction "}}}
+
+""
+" Airline 需要安装powerline 字体
+" sudo apt-get install fonts-powerline
+function! daniel#ForAirlineConfig () 
+"{{{
+  if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+  endif
+
+  " 这个很重要
+  set t_Co=256
+
+  "AirlineTheme term
+  "修改了vim-airline-themes/autoload/airline/themes/solarized.vim中`s:N3`变量，字体效果改为'bold'
+  let g:airline_theme='solarized'
+
+  " 这部分符号从 :help airline 中复制出来
+  " powerline symbols
+  let g:airline_left_sep = ''
+  let g:airline_left_alt_sep = ''
+  "let g:airline_left_alt_sep = '▶'
+  let g:airline_right_sep = ''
+  let g:airline_right_alt_sep = ''
+  let g:airline_symbols.branch = ''
+  let g:airline_symbols.readonly = ''
+  let g:airline_symbols.linenr = '☰'
+  let g:airline_symbols.maxlinenr = ''
+  let g:airline_symbols.dirty='⚡'
+  let g:airline_symbols.paste = 'P'
+  "let g:airline_symbols.spell = 'Ꞩ'
+  "let g:airline_symbols.notexists = 'Ɇ'
+  "let g:airline_symbols.whitespace = 'Ξ'
+
+
+  let g:airline_powerline_fonts = 1
+  " 打开tabline
+  "let g:airline_extensions = ['branch', 'tabline']
+  "let g:airline#extensions#tabline#tab_nr_type = 2
+  "let g:airline#extensions#tabline#show_tab_nr = 1
+  let g:airline#extensions#tabline#enabled = 1
+  let g:airline#extensions#tabline#buffer_nr_show = 1
+
+endfunction "}}}
+  
+function! daniel#FileTypeChange()
+"{{{
+"echom "ft change to ".&ft
+  if (&ft == "vim")
+    set fdm=marker
+  elseif(&ft == "python")
+    set fdm=indent
   endif
 endfunction "}}}
