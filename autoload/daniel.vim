@@ -102,6 +102,13 @@ function! daniel#PlugIns()
   " :NERDTreeToggle 打开文件浏览器
   Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 
+  " 该模块还有后续安装步骤，见 daniel#ForYCMConfig
+  Plug 'ycm-core/YouCompleteMe' , { 'do' : 'git submodule update --init --recursive' }
+
+  " ctrl-w_o 放大一个窗口，两次输入回复窗口。 原生的only window无法恢复窗口
+  Plug 'vim-scripts/ZoomWin'
+
+
 endfunction "}}}
 
 ""
@@ -173,6 +180,7 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForPythonConfig() 
   call daniel#ForGolangConfig() 
   call daniel#ForClangConfig() 
+  call daniel#ForYCMConfig () 
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -247,6 +255,17 @@ function! daniel#CommondConfig()
   filetype indent on
   
   set completeopt=menu
+
+  ""
+  " 在tty下可以使用鼠标
+  " 左键定位 右键定位并进入v mode可视化模式
+  set ttymouse=xterm
+  
+  ""
+  " 在normal mode/insert mode下不开启vim鼠标响应，鼠标响应xterm的事件,可以选取文字和右键复制
+  " 在visual mode下开启vim鼠标响应，鼠标不响应xterm的事件, 不可以选取文字，但可以定位光标
+  " 网上那些教mouse=a的混蛋，a表示所有模式都开启vim鼠标响应，鼠标将不能再选取文字右键复制了
+  set mouse=v
   
   "" for Xclipboard
   " vnoremap <silent> ,y :silent! w ! xsel -i -b<CR>
@@ -303,9 +322,15 @@ endfunction "}}}
 
 function! s:Project_vimrc()
 "{{{
-
   let l:topvimrc=findfile(".vimrc",".;")
-  exec "source ".l:topvimrc
+  " 需避免运行其他用户的vimrc文件
+  if l:topvimrc != "" 
+      let l:checkdir = fnamemodify(l:topvimrc , ":p:h:h")
+      if l:checkdir != "/home"
+          echom "find proj vim: ".l:topvimrc
+          exec "source ".l:topvimrc
+      endif
+  endif
 
 endfunction "}}}
 
@@ -372,4 +397,40 @@ function! daniel#VimHeaderConfig()
   let g:header_field_copyright = '(C) Copyright '.strftime("%Y")." all rights reserved"
   let g:header_field_timestamp_format = '%Y-%m-%d'
   " map <F4> :AddHeader<CR>
+endfunction "}}}
+
+""
+" ycm需要go支持， 并且会访问 https://golang.org/x/tools 这个被墙的网站
+" 需要在$GOPATH/src/github.com/golang 下git clone https://github.com/golang/..
+" 然后 :
+"  cd ~/.vim/plugged/YouCompleteMe/third_party/ycmd/third_party/go/src/golang.org
+"  ln -sf $GOPATH/src/github.com/golang x 
+"
+"重新在  ~/.vim/plugged/YouCompleteMe
+"  git submodule update --init --recursive
+"  如果`third_party`目录下有哪个目录出问题，就删掉重新执行submodule
+"
+"一切就绪后:
+"  python3 install.py --clang-completer
+"  
+"其他语言支持见官网
+"
+"项目下最好有个 compile_commands.json 文件，指示每个文件的编译方式
+"只要命令能编译通过，ycm就能通过libclang.so的调用检查语法及补全
+"对于没有外部依赖的文件，可以不用这个json文件
+"生成 compile_commands.json的工具 `apt-get install bear`
+"//TODO: 目前为止, 没有使用compile_commands.json 成功配置过ycm
+"
+"如果要扩展/修改，只需要修改g:ycm_global_ycm_extra_conf所指示python脚本
+"ycm使用的是clang的库，所以需要安装`sudo apt install libc++-dev`
+" 
+function! daniel#ForYCMConfig () 
+"{{{
+" https://www.jianshu.com/p/d908ce81017a?nomobile=yes
+  let g:ycm_server_python_interpreter='python3'
+  "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
+  let l:extra_conf = findfile(".ycm_extra_conf.py","./;,~/.vim/,~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/")
+  if l:extra_conf != ""
+      let g:ycm_global_ycm_extra_conf=l:extra_conf
+  endif
 endfunction "}}}
