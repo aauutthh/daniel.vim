@@ -342,8 +342,8 @@ function! s:Project_vimrc()
   let l:topvimrc=findfile(".vimrc",".;")
   " 需避免运行其他用户的vimrc文件
   if l:topvimrc != "" 
-      let l:checkdir = fnamemodify(l:topvimrc , ":p:h:h")
-      if l:checkdir != "/home"
+      let l:homevimrc= fnamemodify("~/.vimrc", ":p")
+      if l:topvimrc != l:homevimrc
           echom "find proj vim: ".l:topvimrc
           exec "source ".l:topvimrc
       endif
