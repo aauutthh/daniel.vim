@@ -221,8 +221,9 @@ function! daniel#CommondConfig()
   set fileformat=unix
   set nu  " number
   set noautoindent
-  set nopaste
-  set noai
+  "设置set paste , 否则复制时会触发过多的输入事件，导致很慢
+  set paste
+  set ai
   set tabstop=2
   set expandtab
   set shiftwidth=4
@@ -480,11 +481,14 @@ function! daniel#ForYCMConfig ()
 "{{{
 " https://www.jianshu.com/p/d908ce81017a?nomobile=yes
   let g:ycm_server_python_interpreter='python3'
+
+  ""
+  " ycm会在打开的文件所在目录及向上查找 .ycm_extra_conf.py
+  " 如果查找不到，则会使用全局
+  " 其中最重要的接口是: FlagsForFile( filename, **kwargs )
+  " 每打开一次文件，ycm就会调用这个接口一次，以决定该文件使用的clang编译flags
   "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
-  let l:extra_conf = findfile(".ycm_extra_conf.py","./;,~/.vim/,~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/")
-  if l:extra_conf != ""
-      let g:ycm_global_ycm_extra_conf=l:extra_conf
-  endif
+  let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
 endfunction "}}}
 
 ""
@@ -510,8 +514,6 @@ function! daniel#ForAirlineConfig ()
   "gui vim 程序 需要设置字体
   "set guifont=Cousine\ for\ Powerline:h15
   let g:Powerline_symbols = 'fancy'
-
-
 
 endfunction "}}}
   
