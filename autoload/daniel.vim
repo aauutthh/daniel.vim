@@ -202,6 +202,8 @@ function! daniel#VimConfig(doInstall,...)
   endif
 
   " themes选择必须在插件适配后才可以
+  " 颜色模式会根据终端类型而不同为
+  " linux下需将终端设为linux , mac下使用iterm2会自动设置终端为xterm,注意.bashrc不会复盖这个设置即可
   "colo evening " 部分终端会变成灰色  
   "let g:gruvbox_termcolors=16
   colo gruvbox
@@ -334,7 +336,7 @@ function! daniel#TagConfig()
   "}}}
 
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim :Tlist
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim* :Tlist
 endfunction "}}}
 
 function! s:Project_vimrc()
