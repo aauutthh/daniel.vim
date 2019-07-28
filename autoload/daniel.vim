@@ -490,44 +490,28 @@ endfunction "}}}
 ""
 " Airline 需要安装powerline 字体
 " sudo apt-get install fonts-powerline
+" 终端需配置使用powerline字体
 function! daniel#ForAirlineConfig () 
 "{{{
-  if !exists('g:airline_symbols')
-    let g:airline_symbols = {}
-  endif
-
   " 这个很重要
   set t_Co=256
+
+  let g:airline_powerline_fonts = 1
 
   "AirlineTheme term
   "修改了vim-airline-themes/autoload/airline/themes/solarized.vim中`s:N3`变量，字体效果改为'bold'
   let g:airline_theme='solarized'
 
-  " 这部分符号从 :help airline 中复制出来
-  " powerline symbols
-  let g:airline_left_sep = ''
-  let g:airline_left_alt_sep = ''
-  "let g:airline_left_alt_sep = '▶'
-  let g:airline_right_sep = ''
-  let g:airline_right_alt_sep = ''
-  let g:airline_symbols.branch = ''
-  let g:airline_symbols.readonly = ''
-  let g:airline_symbols.linenr = '☰'
-  let g:airline_symbols.maxlinenr = ''
-  let g:airline_symbols.dirty='⚡'
-  let g:airline_symbols.paste = 'P'
-  "let g:airline_symbols.spell = 'Ꞩ'
-  "let g:airline_symbols.notexists = 'Ɇ'
-  "let g:airline_symbols.whitespace = 'Ξ'
-
-
-  let g:airline_powerline_fonts = 1
   " 打开tabline
-  "let g:airline_extensions = ['branch', 'tabline']
-  "let g:airline#extensions#tabline#tab_nr_type = 2
-  "let g:airline#extensions#tabline#show_tab_nr = 1
   let g:airline#extensions#tabline#enabled = 1
   let g:airline#extensions#tabline#buffer_nr_show = 1
+
+  ""
+  "gui vim 程序 需要设置字体
+  "set guifont=Cousine\ for\ Powerline:h15
+  let g:Powerline_symbols = 'fancy'
+
+
 
 endfunction "}}}
   
