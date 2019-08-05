@@ -20,6 +20,14 @@ if exists('g:daniel_vim_loaded')
 endif
 let g:daniel_vim_loaded = 1
 
+" script path
+let s:spath = resolve(expand("<sfile>:p:h"))
+
+function daniel#Path() 
+"{{{
+  return s:spath
+endfunction "}}}
+
 ""
 " @section 配置方法,config
 "
@@ -185,13 +193,14 @@ function! daniel#VimConfig(doInstall,...)
   " Tag config
   call daniel#TagConfig() 
   
-  call daniel#ForPythonConfig() 
   call daniel#ForGolangConfig() 
   call daniel#ForClangConfig() 
   call daniel#ForYCMConfig () 
   call daniel#ForTernJsConfig() 
 
   autocmd FileType * call daniel#FileTypeChange()
+
+  com! MarkdownPrintCode call daniel#MarkdownPrintCode()
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -200,6 +209,8 @@ function! daniel#VimConfig(doInstall,...)
   if a:doInstall
     call daniel#InstallPlugIns()
   endif
+
+  exec "set rtp+=".fnamemodify(s:spath,":h")."/after"
 
   " themes选择必须在插件适配后才可以
   " 颜色模式会根据终端类型而不同为
@@ -387,9 +398,65 @@ function! daniel#ForGolangConfig()
   autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
 endfunction "}}}
 
-function! daniel#ForPythonConfig() 
+function! s:PythonAutoSettingPost() 
 "{{{
-  autocmd FileType python setlocal omnifunc-=preview
+  setlocal omnifunc-=preview 
+  let s:pythonpath = fnamemodify(s:spath,":h") . "/modules/python3/site-packages"
+  "exec ":badd ".s:pythonpath . "/_.py" 
+  py3 << EOF
+# hook for ycm 
+pythonpath=vim.bindeval("s:pythonpath")
+from ycm.client.base_request import BuildRequestData
+if "myBuildRequestData" not in dir():
+    def myBuildRequestData(*args , **kwargs):
+        r = BuildRequestData()
+        add_code_line = [
+          "import sys",
+          "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
+          "\n",
+        ]
+        rfilepath = r['filepath']
+        if rfilepath in r['file_data']:
+            r['line_num'] += len(add_code_line)
+            add_code = "\n".join(add_code_line)
+            r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
+        print(r)
+        return r
+    
+    youcompleteme.BuildRequestData = myBuildRequestData
+EOF
+
+if 0
+  py3 << EOF
+# hook for jedi
+@jedi_vim.catch_and_print_exceptions
+def get_script(source=None, column=None):
+    jedi_vim.jedi.settings.additional_dynamic_modules = [
+        b.name for b in vim.buffers if (
+            b.name is not None and
+            b.name.endswith('.py') and
+            b.options['buflisted'])]
+    if source is None:
+        source = '\n'.join(vim.current.buffer)
+    source = "import sys\nsys.path.insert(0,'%s')\n" % pythonpath + source
+    row = vim.current.window.cursor[0]
+    if column is None:
+        column = vim.current.window.cursor[1]
+    buf_path = vim.current.buffer.name
+
+    return jedi_vim.jedi.Script(
+        source, row, column, buf_path,
+        encoding=jedi_vim.vim_eval('&encoding') or 'latin1',
+        environment=jedi_vim.get_environment(),
+    )
+#jedi_vim.get_script = get_script
+EOF
+endif
+endfunction "}}}
+
+function! daniel#ForPythonConfigPost() 
+"{{{
+  call s:PythonAutoSettingPost()
 endfunction "}}}
 
 function! daniel#ForCLikeConfig() 
@@ -528,3 +595,28 @@ function! daniel#FileTypeChange()
     set fdm=indent
   endif
 endfunction "}}}
+
+
+function! daniel#MarkdownPrintCode()
+  let oldpos = getcurpos()
+
+  call cursor(oldpos[1]-1,0)
+  let posA = searchpos('^\s*```','nW')  " 不移动cursor 不wrapscan
+  call cursor(oldpos[1],oldpos[2])
+  if ( posA == [0,0])
+    return
+  endif
+
+  let line=getline(posA[0])
+  let space = matchstrpos(line,'```')
+  let pattern2='^'.line[:space[2]-1].'\_s*$'
+  call cursor(posA[0]+1,posA[1])
+  let posB = searchpos(pattern2,'nW')  " 不移动cursor 不wrapscan
+  call cursor(oldpos[1],oldpos[2])
+  if ( posB == [0,0])
+    return
+  endif
+
+  exec ":".posA[0].",".posB[0]."w !cut -c ".(space[1]+1)."-"
+
+endfunction
