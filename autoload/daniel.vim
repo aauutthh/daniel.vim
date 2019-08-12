@@ -352,7 +352,12 @@ endfunction "}}}
 
 function! s:Project_vimrc()
 "{{{
-  let l:topvimrc=findfile(".vimrc",".;")
+  let l:prjtop = s:GetProjectTop()
+  " let l:topvimrc=findfile(".vimrc",".;")
+  let l:topvimrc=l:prjtop."/.vimrc"
+  if !filereadable(l:topvimrc)
+    return
+  endif
   " 需避免运行其他用户的vimrc文件
   if l:topvimrc != "" 
       let l:homevimrc= fnamemodify("~/.vimrc", ":p")
@@ -362,6 +367,22 @@ function! s:Project_vimrc()
       endif
   endif
 
+endfunction "}}}
+
+""
+" 查找项目顶层目录
+" 兼容使用 g:gutentags_project_root = ['...']
+function! s:GetProjectTop()
+"{{{
+if exists("*gutentags#get_project_root")
+    return gutentags#get_project_root(expand('%:p:h', 1))
+endif
+try
+    return gutentags#get_project_root(expand('%:p:h', 1))
+catch "/.*/
+    "echom "error:".v:exception
+    return expand('%:p:h', 1)
+endtry
 endfunction "}}}
 
 function! s:GOPATH_Add_project_dir()
@@ -420,7 +441,6 @@ if "myBuildRequestData" not in dir():
             r['line_num'] += len(add_code_line)
             add_code = "\n".join(add_code_line)
             r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
-        print(r)
         return r
     
     youcompleteme.BuildRequestData = myBuildRequestData
@@ -550,6 +570,16 @@ function! daniel#ForYCMConfig ()
 "{{{
 " https://www.jianshu.com/p/d908ce81017a?nomobile=yes
   let g:ycm_server_python_interpreter='python3'
+  " 找到.extra_conf不用提示
+  let g:ycm_confirm_extra_conf=0
+  " 补全窗口中选择会同时输出preview窗口查看docstring/helpmessage
+  let g:ycm_add_preview_to_completeopt=1
+  " 补全窗口关闭同时关闭preview窗口
+  let g:ycm_autoclose_preview_window_after_completion=1
+
+  " https://github.com/ycm-core/YouCompleteMe/issues/2870
+  let g:ycm_python_binary_path='python3'
+
 
   ""
   " ycm会在打开的文件所在目录及向上查找 .ycm_extra_conf.py
@@ -557,7 +587,7 @@ function! daniel#ForYCMConfig ()
   " 其中最重要的接口是: FlagsForFile( filename, **kwargs )
   " 每打开一次文件，ycm就会调用这个接口一次，以决定该文件使用的clang编译flags
   "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
-  let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+  autocmd FileType c,cpp let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
 endfunction "}}}
 
 ""
