@@ -116,6 +116,11 @@ function! daniel#PlugIns()
 
   Plug 'morhetz/gruvbox'
 
+  ""
+  " 该插件只是完成了后台运行，linux下不能显示quickfix窗口
+  " 思想上可以借鉴
+  " Plug '~/gits/src/github.com/skywind3000/asyncrun.vim'
+
 endfunction "}}}
 
 ""
@@ -207,6 +212,7 @@ function! daniel#VimConfig(doInstall,...)
   "colo evening " 部分终端会变成灰色  
   "let g:gruvbox_termcolors=16
   colo gruvbox
+  call daniel#UtilCommands()
 
 endfunction "}}}
 
@@ -528,3 +534,28 @@ function! daniel#FileTypeChange()
     set fdm=indent
   endif
 endfunction "}}}
+
+function! daniel#UtilCommands()
+  ""
+  " 查找笔记，并在预留窗口打开(ctrl-q) q for quickfix
+  if exists('$NOTEDIR') && isdirectory($NOTEDIR) 
+    "com! -nargs=0 ViewNote call fzf#run({"source":"find ".$NOTEDIR.' -type f -name "*.md"',"down":20})
+    "com! -bang -nargs=0 ViewNote call fzf#run(fzf#wrap("ViewNote",{"source":"find . -type f -name '*.md'","dir":$NOTEDIR,"down":20},<bang>)) | normal <c-w>P
+    com! -bang -nargs=0 ViewNote :FZF $NOTEDIR
+    " let g:fzf_action = {
+    " \ 'ctrl-q': 'ped',
+    " \}
+    function! s:build_quickfix_list(lines)
+      call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+      copen
+      "cc
+    endfunction
+
+    let g:fzf_action = {
+      \ 'ctrl-r': function('s:build_quickfix_list'),
+      \ 'ctrl-q': 'ped',
+      \ 'ctrl-t': 'tab split',
+      \ 'ctrl-x': 'split',
+      \ 'ctrl-v': 'vsplit' }
+  endif
+endfunction
