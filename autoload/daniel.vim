@@ -101,6 +101,7 @@ function! daniel#PlugIns()
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
   Plug 'vim-scripts/taglist.vim'
+  Plug 'majutsushi/tagbar'
   Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
@@ -327,11 +328,13 @@ function! daniel#TagConfig()
 
   " ctags
   set tc=ignore " tagcase ignore case
-  set tags=./.tags; "tags file searching list
+  set tags=./tags;,./.tags; "tags file searching list
   
   "{{{ gutentags 自动生成tags 文件
   " 设置顶层目录标志文件, 自动查找项目顶层
   let g:gutentags_project_root = ['Makefile','.gutctags','.root','.top']
+  "let g:gutentags_dont_load=1 
+  "let g:gutentags_enabled = 0 
 
   " gutctags文件内容与ctags文件一样 man ctags, gutentags插件会把这个文件中的内容传递给ctags作为参数
   " 参考格式:
@@ -346,13 +349,50 @@ function! daniel#TagConfig()
   let g:gutentags_ctags_tagfile = '.tags'
   "}}}
 
+  "{{{
+  " tagbar
+  let g:tagbar_type_go = {
+      \ 'ctagstype' : 'go',
+      \ 'kinds'     : [
+          \ 'p:package',
+          \ 'i:imports:1',
+          \ 'c:constants',
+          \ 'v:variables',
+          \ 't:types',
+          \ 'n:interfaces',
+          \ 'w:fields',
+          \ 'e:embedded',
+          \ 'm:methods',
+          \ 'r:constructor',
+          \ 'f:func'
+      \ ],
+      \ 'sro' : '.',
+      \ 'kind2scope' : {
+          \ 't' : 'ctype',
+          \ 'n' : 'ntype'
+      \ },
+      \ 'scope2kind' : {
+          \ 'ctype' : 't',
+          \ 'ntype' : 'n'
+      \ },
+      \ 'ctagsbin'  : 'gotags',
+      \ 'ctagsargs' : '-sort -silent'
+  \ }
+  let g:tagbar_left = 1
+
+  "}}}
+
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim* :Tlist
+  autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py :Tagbar
+  autocmd VimEnter *.vim*,*.go :Tagbar
 endfunction "}}}
 
+let g:project_top= ""
 function! s:Project_vimrc()
 "{{{
   let l:prjtop = s:GetProjectTop()
+  let g:project_top = l:prjtop
   " let l:topvimrc=findfile(".vimrc",".;")
   let l:topvimrc=l:prjtop."/.vimrc"
   if !filereadable(l:topvimrc)
@@ -410,7 +450,7 @@ endfunction "}}}
 
 function! daniel#ForClangConfig() 
 "{{{
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
+  "autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :call s:Project_vimrc()
 endfunction "}}}
 
