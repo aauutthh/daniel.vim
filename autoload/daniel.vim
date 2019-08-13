@@ -20,6 +20,14 @@ if exists('g:daniel_vim_loaded')
 endif
 let g:daniel_vim_loaded = 1
 
+" script path
+let s:spath = resolve(expand("<sfile>:p:h"))
+
+function daniel#Path() 
+"{{{
+  return s:spath
+endfunction "}}}
+
 ""
 " @section 配置方法,config
 "
@@ -93,6 +101,7 @@ function! daniel#PlugIns()
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
   Plug 'vim-scripts/taglist.vim'
+  Plug 'majutsushi/tagbar'
   Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
@@ -190,13 +199,14 @@ function! daniel#VimConfig(doInstall,...)
   " Tag config
   call daniel#TagConfig() 
   
-  call daniel#ForPythonConfig() 
   call daniel#ForGolangConfig() 
   call daniel#ForClangConfig() 
   call daniel#ForYCMConfig () 
   call daniel#ForTernJsConfig() 
 
   autocmd FileType * call daniel#FileTypeChange()
+
+  com! MarkdownPrintCode call daniel#MarkdownPrintCode()
   
   " call daniel#DoxygenConfig() 
   call daniel#VimHeaderConfig() 
@@ -205,6 +215,8 @@ function! daniel#VimConfig(doInstall,...)
   if a:doInstall
     call daniel#InstallPlugIns()
   endif
+
+  exec "set rtp+=".fnamemodify(s:spath,":h")."/after"
 
   " themes选择必须在插件适配后才可以
   " 颜色模式会根据终端类型而不同为
@@ -322,11 +334,13 @@ function! daniel#TagConfig()
 
   " ctags
   set tc=ignore " tagcase ignore case
-  set tags=./.tags; "tags file searching list
+  set tags=./tags;,./.tags; "tags file searching list
   
   "{{{ gutentags 自动生成tags 文件
   " 设置顶层目录标志文件, 自动查找项目顶层
   let g:gutentags_project_root = ['Makefile','.gutctags','.root','.top']
+  "let g:gutentags_dont_load=1 
+  "let g:gutentags_enabled = 0 
 
   " gutctags文件内容与ctags文件一样 man ctags, gutentags插件会把这个文件中的内容传递给ctags作为参数
   " 参考格式:
@@ -341,13 +355,55 @@ function! daniel#TagConfig()
   let g:gutentags_ctags_tagfile = '.tags'
   "}}}
 
+  "{{{
+  " tagbar
+  let g:tagbar_type_go = {
+      \ 'ctagstype' : 'go',
+      \ 'kinds'     : [
+          \ 'p:package',
+          \ 'i:imports:1',
+          \ 'c:constants',
+          \ 'v:variables',
+          \ 't:types',
+          \ 'n:interfaces',
+          \ 'w:fields',
+          \ 'e:embedded',
+          \ 'm:methods',
+          \ 'r:constructor',
+          \ 'f:func'
+      \ ],
+      \ 'sro' : '.',
+      \ 'kind2scope' : {
+          \ 't' : 'ctype',
+          \ 'n' : 'ntype'
+      \ },
+      \ 'scope2kind' : {
+          \ 'ctype' : 't',
+          \ 'ntype' : 'n'
+      \ },
+      \ 'ctagsbin'  : 'gotags',
+      \ 'ctagsargs' : '-sort -silent'
+  \ }
+  let g:tagbar_left = 1
+
+  "}}}
+
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.go,*.py,*.vim* :Tlist
+  autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py :Tagbar
+  autocmd VimEnter *.vim*,*.go :Tagbar
 endfunction "}}}
 
+let g:project_top= ""
 function! s:Project_vimrc()
 "{{{
-  let l:topvimrc=findfile(".vimrc",".;")
+  let l:prjtop = s:GetProjectTop()
+  let g:project_top = l:prjtop
+  " let l:topvimrc=findfile(".vimrc",".;")
+  let l:topvimrc=l:prjtop."/.vimrc"
+  if !filereadable(l:topvimrc)
+    return
+  endif
   " 需避免运行其他用户的vimrc文件
   if l:topvimrc != "" 
       let l:homevimrc= fnamemodify("~/.vimrc", ":p")
@@ -357,6 +413,22 @@ function! s:Project_vimrc()
       endif
   endif
 
+endfunction "}}}
+
+""
+" 查找项目顶层目录
+" 兼容使用 g:gutentags_project_root = ['...']
+function! s:GetProjectTop()
+"{{{
+if exists("*gutentags#get_project_root")
+    return gutentags#get_project_root(expand('%:p:h', 1))
+endif
+try
+    return gutentags#get_project_root(expand('%:p:h', 1))
+catch "/.*/
+    "echom "error:".v:exception
+    return expand('%:p:h', 1)
+endtry
 endfunction "}}}
 
 function! s:GOPATH_Add_project_dir()
@@ -384,7 +456,7 @@ endfunction "}}}
 
 function! daniel#ForClangConfig() 
 "{{{
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
+  "autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :call s:Project_vimrc()
 endfunction "}}}
 
@@ -393,9 +465,64 @@ function! daniel#ForGolangConfig()
   autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
 endfunction "}}}
 
-function! daniel#ForPythonConfig() 
+function! s:PythonAutoSettingPost() 
 "{{{
-  autocmd FileType python setlocal omnifunc-=preview
+  setlocal omnifunc-=preview 
+  let s:pythonpath = fnamemodify(s:spath,":h") . "/modules/python3/site-packages"
+  "exec ":badd ".s:pythonpath . "/_.py" 
+  py3 << EOF
+# hook for ycm 
+pythonpath=vim.bindeval("s:pythonpath")
+from ycm.client.base_request import BuildRequestData
+if "myBuildRequestData" not in dir():
+    def myBuildRequestData(*args , **kwargs):
+        r = BuildRequestData()
+        add_code_line = [
+          "import sys",
+          "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
+          "\n",
+        ]
+        rfilepath = r['filepath']
+        if rfilepath in r['file_data']:
+            r['line_num'] += len(add_code_line)
+            add_code = "\n".join(add_code_line)
+            r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
+        return r
+    
+    youcompleteme.BuildRequestData = myBuildRequestData
+EOF
+
+if 0
+  py3 << EOF
+# hook for jedi
+@jedi_vim.catch_and_print_exceptions
+def get_script(source=None, column=None):
+    jedi_vim.jedi.settings.additional_dynamic_modules = [
+        b.name for b in vim.buffers if (
+            b.name is not None and
+            b.name.endswith('.py') and
+            b.options['buflisted'])]
+    if source is None:
+        source = '\n'.join(vim.current.buffer)
+    source = "import sys\nsys.path.insert(0,'%s')\n" % pythonpath + source
+    row = vim.current.window.cursor[0]
+    if column is None:
+        column = vim.current.window.cursor[1]
+    buf_path = vim.current.buffer.name
+
+    return jedi_vim.jedi.Script(
+        source, row, column, buf_path,
+        encoding=jedi_vim.vim_eval('&encoding') or 'latin1',
+        environment=jedi_vim.get_environment(),
+    )
+#jedi_vim.get_script = get_script
+EOF
+endif
+endfunction "}}}
+
+function! daniel#ForPythonConfigPost() 
+"{{{
+  call s:PythonAutoSettingPost()
 endfunction "}}}
 
 function! daniel#ForCLikeConfig() 
@@ -489,6 +616,16 @@ function! daniel#ForYCMConfig ()
 "{{{
 " https://www.jianshu.com/p/d908ce81017a?nomobile=yes
   let g:ycm_server_python_interpreter='python3'
+  " 找到.extra_conf不用提示
+  let g:ycm_confirm_extra_conf=0
+  " 补全窗口中选择会同时输出preview窗口查看docstring/helpmessage
+  let g:ycm_add_preview_to_completeopt=1
+  " 补全窗口关闭同时关闭preview窗口
+  let g:ycm_autoclose_preview_window_after_completion=1
+
+  " https://github.com/ycm-core/YouCompleteMe/issues/2870
+  let g:ycm_python_binary_path='python3'
+
 
   ""
   " ycm会在打开的文件所在目录及向上查找 .ycm_extra_conf.py
@@ -496,7 +633,7 @@ function! daniel#ForYCMConfig ()
   " 其中最重要的接口是: FlagsForFile( filename, **kwargs )
   " 每打开一次文件，ycm就会调用这个接口一次，以决定该文件使用的clang编译flags
   "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
-  let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+  autocmd FileType c,cpp let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
 endfunction "}}}
 
 ""
@@ -536,9 +673,10 @@ function! daniel#FileTypeChange()
 endfunction "}}}
 
 function! daniel#UtilCommands()
+"{{{
   ""
   " 查找笔记，并在预留窗口打开(ctrl-q) q for quickfix
-  if exists('$NOTEDIR') && isdirectory($NOTEDIR) 
+  if exists('$NOTEDIR') && isdirectory($NOTEDIR)
     "com! -nargs=0 ViewNote call fzf#run({"source":"find ".$NOTEDIR.' -type f -name "*.md"',"down":20})
     "com! -bang -nargs=0 ViewNote call fzf#run(fzf#wrap("ViewNote",{"source":"find . -type f -name '*.md'","dir":$NOTEDIR,"down":20},<bang>)) | normal <c-w>P
     com! -bang -nargs=0 ViewNote :FZF $NOTEDIR
@@ -558,4 +696,32 @@ function! daniel#UtilCommands()
       \ 'ctrl-x': 'split',
       \ 'ctrl-v': 'vsplit' }
   endif
+
+"}}}
+endfunction
+
+function! daniel#MarkdownPrintCode()
+"{{{
+  let oldpos = getcurpos()
+
+  call cursor(oldpos[1]-1,0)
+  let posA = searchpos('^\s*```','nW')  " 不移动cursor 不wrapscan
+  call cursor(oldpos[1],oldpos[2])
+  if ( posA == [0,0])
+    return
+  endif
+
+  let line=getline(posA[0])
+  let space = matchstrpos(line,'```')
+  let pattern2='^'.line[:space[2]-1].'\_s*$'
+  call cursor(posA[0]+1,posA[1])
+  let posB = searchpos(pattern2,'nW')  " 不移动cursor 不wrapscan
+  call cursor(oldpos[1],oldpos[2])
+  if ( posB == [0,0])
+    return
+  endif
+
+  exec ":".posA[0].",".posB[0]."w !cut -c ".(space[1]+1)."-"
+
+"}}}
 endfunction
