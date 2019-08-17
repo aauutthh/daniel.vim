@@ -340,7 +340,7 @@ function! daniel#TagConfig()
   " 设置顶层目录标志文件, 自动查找项目顶层
   let g:gutentags_project_root = ['Makefile','.gutctags','.root','.top']
   "let g:gutentags_dont_load=1 
-  "let g:gutentags_enabled = 0 
+  let g:gutentags_enabled = 0 
 
   " gutctags文件内容与ctags文件一样 man ctags, gutentags插件会把这个文件中的内容传递给ctags作为参数
   " 参考格式:
@@ -390,7 +390,7 @@ function! daniel#TagConfig()
 
   autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
   autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py :Tagbar
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :Tagbar
   autocmd VimEnter *.vim*,*.go :Tagbar
 endfunction "}}}
 
@@ -623,6 +623,8 @@ function! daniel#ForYCMConfig ()
   " 补全窗口关闭同时关闭preview窗口
   let g:ycm_autoclose_preview_window_after_completion=1
 
+  let g:ycm_always_populate_location_list =1
+
   " https://github.com/ycm-core/YouCompleteMe/issues/2870
   let g:ycm_python_binary_path='python3'
 
@@ -634,6 +636,11 @@ function! daniel#ForYCMConfig ()
   " 每打开一次文件，ycm就会调用这个接口一次，以决定该文件使用的clang编译flags
   "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
   autocmd FileType c,cpp let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+
+
+  " ycm 切换下一个error
+  nmap ,n :lnext<CR>
+
 endfunction "}}}
 
 ""
