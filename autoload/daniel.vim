@@ -476,6 +476,12 @@ function! s:PythonAutoSettingPost()
   "exec ":badd ".s:pythonpath . "/_.py" 
   py3 << EOF
 # hook for ycm 
+import os
+jedi_vim.jedi.settings.cache_directory = os.getenv('HOME') + '/.cache/jedi'
+jedi_vim.jedi.settings.use_filesystem_cache = True
+jedi_vim.jedi.settings.fast_parser = True
+jedi_vim.jedi.settings.auto_import_modules += ['requests']
+
 pythonpath=vim.bindeval("s:pythonpath")
 from ycm.client.base_request import BuildRequestData
 if "myBuildRequestData" not in dir():
