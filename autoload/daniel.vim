@@ -700,10 +700,17 @@ function! daniel#UtilCommands()
     " let g:fzf_action = {
     " \ 'ctrl-q': 'ped',
     " \}
+  endif
+
     function! s:build_quickfix_list(lines)
       call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
       copen
       "cc
+    endfunction
+
+    function! s:save_to_reg(lines)
+      call setreg('"',join(a:lines,"\n"))
+      call append(line('.'),a:lines)
     endfunction
 
     let g:fzf_action = {
@@ -711,8 +718,8 @@ function! daniel#UtilCommands()
       \ 'ctrl-q': 'ped',
       \ 'ctrl-t': 'tab split',
       \ 'ctrl-x': 'split',
+      \ 'ctrl-y': function('s:save_to_reg'),
       \ 'ctrl-v': 'vsplit' }
-  endif
 
 "}}}
 endfunction
