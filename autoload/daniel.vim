@@ -485,26 +485,31 @@ function! s:PythonAutoSettingPost()
   "exec ":badd ".s:pythonpath . "/_.py" 
   py3 << EOF
 # hook for ycm 
-def inspect():
-    pythonpath=vim.bindeval("s:pythonpath")
-    from ycm.client.base_request import BuildRequestData
-    if "myBuildRequestData" not in dir():
-        def myBuildRequestData(*args , **kwargs):
-            r = BuildRequestData()
-            add_code_line = [
-              "import sys",
-              "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
-              "\n",
-            ]
-            rfilepath = r['filepath']
-            if rfilepath in r['file_data']:
-                r['line_num'] += len(add_code_line)
-                add_code = "\n".join(add_code_line)
-                r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
-            return r
-        
-        youcompleteme.BuildRequestData = myBuildRequestData
-#inspect()
+import os
+jedi_vim.jedi.settings.cache_directory = os.getenv('HOME') + '/.cache/jedi'
+jedi_vim.jedi.settings.use_filesystem_cache = True
+jedi_vim.jedi.settings.fast_parser = True
+#jedi_vim.jedi.settings.auto_import_modules += ['requests']
+
+pythonpath=vim.bindeval("s:pythonpath")
+from ycm.client.base_request import BuildRequestData
+#if "myBuildRequestData" not in dir():
+if False:
+    def myBuildRequestData(*args , **kwargs):
+        r = BuildRequestData()
+        add_code_line = [
+          "import sys",
+          "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
+          "\n",
+        ]
+        rfilepath = r['filepath']
+        if rfilepath in r['file_data']:
+            r['line_num'] += len(add_code_line)
+            add_code = "\n".join(add_code_line)
+            r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
+        return r
+    
+    youcompleteme.BuildRequestData = myBuildRequestData
 EOF
 
 if 0
