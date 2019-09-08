@@ -19,3 +19,7 @@ command! -range -nargs=0 BashRun :<line1>,<line2>w !sh
 " 大写Source 执行选中区域(或当前行)的命令
 command! -range Source :<line1>,<line2>y x | :@x
 
+
+"nmap ,date :. !date +"\# \%Y-\%m-\%d \%H:\%M:\%S"<CR>
+nmap ,date :call setline(line('.'), getline('.') . strftime("%Y-%m-%d %H:%M:%S"))<CR>
+

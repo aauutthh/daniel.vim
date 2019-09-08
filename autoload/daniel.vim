@@ -105,6 +105,7 @@ function! daniel#PlugIns()
   Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
+  Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
 
   " 自动生成tag文件, 自动查找项目顶层目录
   Plug 'ludovicchabant/vim-gutentags'
@@ -117,6 +118,10 @@ function! daniel#PlugIns()
 
   " ctrl-w_o 放大一个窗口，两次输入回复窗口。 原生的only window无法恢复窗口
   Plug 'vim-scripts/ZoomWin'
+
+  " 为了支持flask而安装python-mode
+  " python-mode 可以实现检查pep8
+  Plug 'python-mode/python-mode', { 'for': 'python', 'branch': 'develop' }
 
   ""
   " 增加额外的配色方案
@@ -203,6 +208,7 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForClangConfig() 
   call daniel#ForYCMConfig () 
   call daniel#ForTernJsConfig() 
+  call daniel#ForPhpConfig()
 
   autocmd FileType * call daniel#FileTypeChange()
 
@@ -455,6 +461,7 @@ function! s:GOPATH_Add_project_dir()
   endif
 
   exec "GoPath ".l:top . ":" . $GOPATH
+  "let $GOPATH = l:top . ":" . $GOPATH
 
 endfunction "}}}
 
@@ -466,7 +473,9 @@ endfunction "}}}
 
 function! daniel#ForGolangConfig() 
 "{{{
-  autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
+  " 用vimenter时机比gopls慢，导致设置GOPATH前gopls就启动了
+  "autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
+  autocmd FileType go :call s:GOPATH_Add_project_dir()
 endfunction "}}}
 
 function! s:PythonAutoSettingPost() 
@@ -476,24 +485,26 @@ function! s:PythonAutoSettingPost()
   "exec ":badd ".s:pythonpath . "/_.py" 
   py3 << EOF
 # hook for ycm 
-pythonpath=vim.bindeval("s:pythonpath")
-from ycm.client.base_request import BuildRequestData
-if "myBuildRequestData" not in dir():
-    def myBuildRequestData(*args , **kwargs):
-        r = BuildRequestData()
-        add_code_line = [
-          "import sys",
-          "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
-          "\n",
-        ]
-        rfilepath = r['filepath']
-        if rfilepath in r['file_data']:
-            r['line_num'] += len(add_code_line)
-            add_code = "\n".join(add_code_line)
-            r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
-        return r
-    
-    youcompleteme.BuildRequestData = myBuildRequestData
+def inspect():
+    pythonpath=vim.bindeval("s:pythonpath")
+    from ycm.client.base_request import BuildRequestData
+    if "myBuildRequestData" not in dir():
+        def myBuildRequestData(*args , **kwargs):
+            r = BuildRequestData()
+            add_code_line = [
+              "import sys",
+              "sys.path.insert(0,'%s')" % pythonpath.decode("utf8"),
+              "\n",
+            ]
+            rfilepath = r['filepath']
+            if rfilepath in r['file_data']:
+                r['line_num'] += len(add_code_line)
+                add_code = "\n".join(add_code_line)
+                r['file_data'][rfilepath]['contents'] = add_code + r['file_data'][rfilepath]['contents']
+            return r
+        
+        youcompleteme.BuildRequestData = myBuildRequestData
+#inspect()
 EOF
 
 if 0
@@ -527,6 +538,11 @@ endfunction "}}}
 function! daniel#ForPythonConfigPost() 
 "{{{
   call s:PythonAutoSettingPost()
+endfunction "}}}
+
+function! daniel#ForPhpConfig() 
+"{{{
+  set ai
 endfunction "}}}
 
 function! daniel#ForCLikeConfig() 
