@@ -209,6 +209,7 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForYCMConfig () 
   call daniel#ForTernJsConfig() 
   call daniel#ForPhpConfig()
+  call daniel#ForPythonConfig() 
 
   autocmd FileType * call daniel#FileTypeChange()
 
@@ -543,6 +544,22 @@ endfunction "}}}
 function! daniel#ForPythonConfigPost() 
 "{{{
   call s:PythonAutoSettingPost()
+endfunction "}}}
+
+function! daniel#ForPythonConfig() 
+"{{{
+" let g:jedi#completions_command = "<c-o>"
+"      let pluginpath = fnamemodify(s:spath , ':h:h')
+"       let g:ycm_language_server = [ {
+" \         'name': 'python',
+" \         'cmdline': [ '/usr/bin/python3',
+" \         pluginpath.'/plugged/jedi-vim/pythonx/jedi/jedi/evaluate/compiled/subprocess/__main__.py',
+" \         pluginpath.'/plugged/jedi-vim/pythonx/parso',
+" \         '3.5.3'],
+" \         'filetypes': [ 'python' ]
+" \         }
+" \         ]
+
 endfunction "}}}
 
 function! daniel#ForPhpConfig() 
