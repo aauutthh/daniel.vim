@@ -781,3 +781,39 @@ function! daniel#MarkdownPrintCode()
 
 "}}}
 endfunction
+
+function! s:Previewwindow_open(name) 
+"{{{
+    pclose
+    exe "botright 4new " . a:name
+    setlocal buftype=nofile bufhidden=delete noswapfile nowrap previewwindow
+    redraw
+endfunction 
+"}}}
+
+function! s:Previewwindow_run(cmd) 
+"{{{
+    try
+    let l:cmd = substitute(a:cmd, '%\(:[phtre]\)*' ,'\=expand(submatch(0))',"g")
+    let l:cmd = substitute(l:cmd, '<\w\+>\(:[phtre]\)*' ,'\=expand(submatch(0))',"g")
+    let l:msg=systemlist(l:cmd)
+    if len(msg)
+        call s:Previewwindow_open("__run__")
+        call append(line('$'), l:msg)
+        normal dd
+        call cursor(line('$'),1)
+        wincmd p
+     else
+         echo "No output."
+     endif
+     catch
+        echohl Error | echo "Run-time error." | echohl none
+     endtry
+endfunction 
+"}}}
+
+command! -nargs=+ -complete=shellcmd PreviewRun :call <SID>Previewwindow_run(<q-args>)
+
+if len(mapcheck('<Leader>r','n'))==0
+  nmap <Leader>r :PreviewRun 
+endif
