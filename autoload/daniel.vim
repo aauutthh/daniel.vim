@@ -100,6 +100,8 @@ function! daniel#PlugIns()
   Plug 'pangloss/vim-javascript'
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
+  " jedi 默认会绑定\r, 这里改为空就不会绑定
+  let g:jedi#rename_command = ""
   Plug 'vim-scripts/taglist.vim'
   Plug 'majutsushi/tagbar'
   Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
@@ -122,6 +124,10 @@ function! daniel#PlugIns()
   " 为了支持flask而安装python-mode
   " python-mode 可以实现检查pep8
   Plug 'python-mode/python-mode', { 'for': 'python', 'branch': 'develop' }
+  " 插件会绑定快捷键\r , 作为执行脚本用, 与我想绑定的执行shell冲突
+  " pymode_run置为0就会不绑定相关
+  let g:pymode_run = 0
+  let g:pymode_run_bind='<leader>exe' 
 
   ""
   " 增加额外的配色方案
