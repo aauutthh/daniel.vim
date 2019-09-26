@@ -348,6 +348,10 @@ function! daniel#TagConfig()
   " ctags
   set tc=ignore " tagcase ignore case
   set tags=./tags;,./.tags; "tags file searching list
+  " let g:tagbar_type_cpp = {
+  "     \ 'ctagstype' : 'cpp',
+  "     \ 'deffile' : expand('%:p:h') . 'cpp.cnf'
+  " \ }
   
   "{{{ gutentags 自动生成tags 文件
   " 设置顶层目录标志文件, 自动查找项目顶层
