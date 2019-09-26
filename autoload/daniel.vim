@@ -351,9 +351,9 @@ function! daniel#TagConfig()
   
   "{{{ gutentags 自动生成tags 文件
   " 设置顶层目录标志文件, 自动查找项目顶层
-  let g:gutentags_project_root = ['Makefile','.gutctags','.root','.top']
+  let g:gutentags_project_root = ['.gutctags','.root','.top']
   "let g:gutentags_dont_load=1 
-  let g:gutentags_enabled = 0 
+  let g:gutentags_enabled = 1 
 
   " gutctags文件内容与ctags文件一样 man ctags, gutentags插件会把这个文件中的内容传递给ctags作为参数
   " 参考格式:
