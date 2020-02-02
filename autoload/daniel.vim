@@ -136,6 +136,9 @@ function! daniel#PlugIns()
 
   Plug 'morhetz/gruvbox'
 
+  " for qml
+  Plug 'crucerucalin/qml.vim'
+
   ""
   " 该插件只是完成了后台运行，linux下不能显示quickfix窗口
   " 思想上可以借鉴
