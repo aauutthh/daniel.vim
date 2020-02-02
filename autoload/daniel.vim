@@ -98,6 +98,7 @@ function! daniel#PlugIns()
   Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
   Plug 'burnettk/vim-angular'
   Plug 'pangloss/vim-javascript'
+  " ternjs for javascript
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
   " jedi 默认会绑定\r, 这里改为空就不会绑定
@@ -239,7 +240,8 @@ function! daniel#VimConfig(doInstall,...)
   " linux下需将终端设为linux , mac下使用iterm2会自动设置终端为xterm,注意.bashrc不会复盖这个设置即可
   "colo evening " 部分终端会变成灰色  
   "let g:gruvbox_termcolors=16
-  colo gruvbox
+  "colo gruvbox
+  colo seoul256
   call daniel#UtilCommands()
 
 endfunction "}}}
@@ -412,7 +414,8 @@ function! daniel#TagConfig()
 
   "}}}
 
-  autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
+  "autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
+  autocmd FileType python,c,cpp,go :Tagbar
   autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :Tagbar
   autocmd VimEnter *.vim*,*.go :Tagbar

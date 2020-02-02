@@ -1,0 +1,21 @@
+{
+  "libs": [
+    "ecma5",
+    "ecma6",
+    "undefscore"
+  ],
+  "loadEagerly": [ ],
+  "plugins": {
+    "requirejs": {
+      "baseURL": "./",
+      "paths": {}
+    },
+    "node": {},
+    "webpack": {},
+    "commonjs": {},
+    "complete_strings": {},
+    "es_modules": {},
+    "modules": {},
+    "jsx": {}
+  }
+}
