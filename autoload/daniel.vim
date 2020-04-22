@@ -143,6 +143,9 @@ function! daniel#PlugIns()
   " Plug 'integralist/vim-mypy', { 'for': 'python' }
   Plug 'flebel/vim-mypy', { 'for': 'python', 'branch': 'bugfix/fast_parser_is_default_and_only_parser' }
 
+  " for qml
+  Plug 'crucerucalin/qml.vim'
+
   ""
   " 该插件只是完成了后台运行，linux下不能显示quickfix窗口
   " 思想上可以借鉴
