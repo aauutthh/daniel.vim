@@ -137,6 +137,12 @@ function! daniel#PlugIns()
 
   Plug 'morhetz/gruvbox'
 
+  Plug 'vim-syntastic/syntastic'
+
+  " python mypy checker
+  " Plug 'integralist/vim-mypy', { 'for': 'python' }
+  Plug 'flebel/vim-mypy', { 'for': 'python', 'branch': 'bugfix/fast_parser_is_default_and_only_parser' }
+
   ""
   " 该插件只是完成了后台运行，linux下不能显示quickfix窗口
   " 思想上可以借鉴
@@ -572,6 +578,16 @@ function! daniel#ForPythonConfig()
 " \         'filetypes': [ 'python' ]
 " \         }
 " \         ]
+
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_python_checkers = ['mypy']
 
 endfunction "}}}
 
