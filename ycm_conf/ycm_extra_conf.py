@@ -7,7 +7,7 @@ Default_Flags = [
     # '-Werror',
     '-fexceptions',
     '-DNDEBUG',
-    '-std=c++11',
+    '-std=c++17',
     '-x', 'c++',
     # '-isystem',
     # '/usr/include',
