@@ -673,7 +673,7 @@ endfunction "}}}
 function! daniel#ForYCMConfig () 
 "{{{
 " https://www.jianshu.com/p/d908ce81017a?nomobile=yes
-  let g:ycm_server_python_interpreter='python3'
+  "let g:ycm_server_python_interpreter='python3'
   " 找到.extra_conf不用提示
   let g:ycm_confirm_extra_conf=0
   " 补全窗口中选择会同时输出preview窗口查看docstring/helpmessage

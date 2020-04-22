@@ -71,5 +71,5 @@ def FlagsForFile(filename, **kwargs):
       'include_paths_relative_to_dir': rootpath
     }
     print(filename, ":", out)
-    print("clang++" + " ".join(out['flags']))
+    print("clang++ " + " ".join(out['flags']))
     return out
