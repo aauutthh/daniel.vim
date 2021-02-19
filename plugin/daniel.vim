@@ -21,5 +21,8 @@ command! -range Source :<line1>,<line2>y x | :@x
 
 
 "nmap ,date :. !date +"\# \%Y-\%m-\%d \%H:\%M:\%S"<CR>
-nmap ,date :call setline(line('.'), getline('.') . strftime("%Y-%m-%d %H:%M:%S"))<CR>
+nmap ,date :call setline(line('.'), getline('.') ." ". strftime("%Y-%m-%d %H:%M:%S"))<CR>
+let g:syntastic_quiet_messages = {
+    \ "regex":   ['MD013'],
+    \ "file:p":  ['\m^/usr/include/', '\m\c\.h$'] }
 

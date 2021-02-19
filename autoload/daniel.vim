@@ -154,6 +154,10 @@ function! daniel#PlugIns()
   " 思想上可以借鉴
   " Plug '~/gits/src/github.com/skywind3000/asyncrun.vim'
 
+  " for typescript
+  " http://blog.88mph.io/2017/11/08/equipping-vim-for-typescript-a-newcomers-guide/
+  Plug 'leafgarland/typescript-vim'
+  
 endfunction "}}}
 
 ""
@@ -424,10 +428,11 @@ function! daniel#TagConfig()
   "}}}
 
   "autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
-  autocmd FileType python,c,cpp,go :Tagbar
+  autocmd FileType python,c,cpp,go :TagbarOpen
   autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
-  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :Tagbar
-  autocmd VimEnter *.vim*,*.go :Tagbar
+  autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :TagbarOpen
+  autocmd VimEnter *.vim*,*.go :TagbarOpen
+  autocmd FileType typescript :set makeprg=tsc
 endfunction "}}}
 
 let g:project_top= ""
@@ -502,6 +507,11 @@ function! daniel#ForGolangConfig()
   " 用vimenter时机比gopls慢，导致设置GOPATH前gopls就启动了
   "autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
   autocmd FileType go :call s:GOPATH_Add_project_dir()
+  let g:go_highlight_types = 1
+  let g:go_highlight_functions = 1
+  let g:go_highlight_fields = 1
+  let g:go_highlight_function_calls = 1
+  let g:go_highlight_operators = 1
 endfunction "}}}
 
 function! s:PythonAutoSettingPost() 
