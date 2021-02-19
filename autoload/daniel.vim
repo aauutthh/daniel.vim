@@ -113,6 +113,9 @@ function! daniel#PlugIns()
   " 自动生成tag文件, 自动查找项目顶层目录
   Plug 'ludovicchabant/vim-gutentags'
 
+  " typescript https://github.com/Microsoft/TypeScript/wiki/TypeScript-Editor-Support#vim
+  Plug 'Quramy/tsuquyomi'
+
   " :NERDTreeToggle 打开文件浏览器
   Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 
@@ -616,6 +619,7 @@ endfunction "}}}
 " :help tern  
 function! daniel#ForTernJsConfig() 
 "{{{
+
 	  let s:tern_project_code='{
 \      "libs": [
 \        "browser",
@@ -701,6 +705,15 @@ function! daniel#ForYCMConfig ()
 
   " https://github.com/ycm-core/YouCompleteMe/issues/2870
   let g:ycm_python_binary_path='python3'
+
+    if !exists("g:ycm_semantic_triggers")
+    let g:ycm_semantic_triggers = {}
+    endif
+    "let g:ycm_semantic_triggers['typescript'] = ['.']
+
+    " for Plug 'Quramy/tsuquyomi'
+    let g:tsuquyomi_completion_detail = 1
+    autocmd FileType typescript setlocal completeopt+=menu,preview
 
 
   ""
