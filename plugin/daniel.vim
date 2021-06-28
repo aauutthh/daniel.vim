@@ -1,3 +1,4 @@
+:scriptencoding utf-8
 if exists('g:daniel_vim_pluged')
   finish
 endif
@@ -22,7 +23,15 @@ command! -range Source :<line1>,<line2>y x | :@x
 
 "nmap ,date :. !date +"\# \%Y-\%m-\%d \%H:\%M:\%S"<CR>
 nmap ,date :call setline(line('.'), getline('.') ." ". strftime("%Y-%m-%d %H:%M:%S"))<CR>
-let g:syntastic_quiet_messages = {
-    \ "regex":   ['MD013'],
-    \ "file:p":  ['\m^/usr/include/', '\m\c\.h$'] }
 
+" 语法检查时忽略的错误
+let g:syntastic_quiet_messages = {
+    \ 'regex':   ['MD013'],
+    \ 'file:p':  ['\m^/usr/include/', '\m\c\.h$'] }
+
+
+" markdown 文件保存时去除末尾空格
+augroup markdown_trim_space
+  autocmd!
+  autocmd BufWritePre *.md %s/\s\+$//ge
+augroup END

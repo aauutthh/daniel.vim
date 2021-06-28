@@ -121,6 +121,12 @@ function! daniel#PlugIns()
 
   " 该模块还有后续安装步骤，见 daniel#ForYCMConfig
   Plug 'ycm-core/YouCompleteMe' , { 'do' : 'git submodule update --init --recursive' }
+  
+  " perl补全
+  Plug 'vim-perl/vim-perl', { 'for': 'perl', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
+
+  " 使用makefile生成.ycm_extra_conf.py
+  Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
 
   " ctrl-w_o 放大一个窗口，两次输入回复窗口。 原生的only window无法恢复窗口
   Plug 'vim-scripts/ZoomWin'
