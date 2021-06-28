@@ -33,5 +33,18 @@ let g:syntastic_quiet_messages = {
 " markdown 文件保存时去除末尾空格
 augroup markdown_trim_space
   autocmd!
-  autocmd BufWritePre *.md %s/\s\+$//ge
+  " :ks 当前位置记号为s, 方便跳回
+  autocmd BufWritePre *.md ks|%s/\s\+$//ge|'s
 augroup END
+
+" auto use templates
+" 新建文件时自动使用模板
+augroup Templates
+  autocmd!
+  " 模板替换算法: [template.vim](https://www.vim.org/scripts/script.php?script_id=2834)
+  autocmd BufNewFile *.*  let b:tpl = daniel#TemplatesPath(). '/skeleton.'.expand('%:e')
+    \| if filereadable(b:tpl) 
+    \| exec "0r ".b:tpl 
+    \| silent %s/<%=\(.\{-}\)%>/\=eval(submatch(1))/ge 
+    \| endif
+augroup end
