@@ -26,7 +26,7 @@ nmap ,date :call setline(line('.'), getline('.') ." ". strftime("%Y-%m-%d %H:%M:
 
 " 语法检查时忽略的错误
 let g:syntastic_quiet_messages = {
-    \ 'regex':   ['MD013'],
+    \ 'regex':   ['MD013', 'MD033'],
     \ 'file:p':  ['\m^/usr/include/', '\m\c\.h$'] }
 
 
