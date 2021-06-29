@@ -40,6 +40,11 @@ function daniel#TemplatesPath()
   return s:sdanielhome . '/templates'
 endfunction "}}}
 
+function daniel#PythonStubPath() 
+"{{{
+  return s:sdanielhome . '/modules/python3/stub'
+endfunction "}}}
+
 ""
 " @section 配置方法,config
 "
@@ -518,6 +523,7 @@ function! s:GOPATH_Add_project_dir()
       return 
   endif
 
+  " use :GoPah command to set GOPATH env
   exec 'GoPath '.l:top . ':' . $GOPATH
   "let $GOPATH = l:top . ':' . $GOPATH
 
@@ -611,7 +617,7 @@ endfunction "}}}
 
 function! daniel#ForPythonConfigPost() 
 "{{{
-  call s:PythonAutoSettingPost()
+  "call s:PythonAutoSettingPost()
 endfunction "}}}
 
 function! daniel#ForPythonConfig() 
@@ -627,6 +633,9 @@ function! daniel#ForPythonConfig()
 " \         'filetypes': [ 'python' ]
 " \         }
 " \         ]
+
+let l:pythonpath=daniel#PythonStubPath(). ':' . $PYTHONPATH
+let $PYTHONPATH=l:pythonpath
 
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
