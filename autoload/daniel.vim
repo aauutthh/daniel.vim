@@ -119,6 +119,8 @@ function! daniel#PlugIns()
   " :NERDTreeToggle 打开文件浏览器
   Plug 'scrooloose/nerdtree', { 'on':  'NERDTreeToggle' }
 
+  Plug 'neomake/neomake'
+
   " 该模块还有后续安装步骤，见 daniel#ForYCMConfig
   Plug 'ycm-core/YouCompleteMe' , { 'do' : 'git submodule update --init --recursive' }
 
