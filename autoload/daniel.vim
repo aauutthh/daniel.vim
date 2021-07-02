@@ -646,6 +646,8 @@ let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
 let g:syntastic_python_checkers = ['mypy']
+" 设置mdl(markdownlint) exec的参数，不检查markdown front matters头部要素
+let g:syntastic_markdown_mdl_args = '--ignore_front_matter'
 
 endfunction "}}}
 

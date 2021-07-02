@@ -1,5 +1,5 @@
-#!/usr/bin/env perl
-#  vim: colorcolumn=80
+#!/bin/bash
+#   vim: colorcolumn=80
 
 ################################################################################
 # filename  : <%=expand('%:t')%>
@@ -8,6 +8,11 @@
 # description:
 ################################################################################
 
-use strict;
-use warnings;
-print("hello\n");
+# -e 错误则退出 -x 执行每步都打印
+set -ex
+
+main() {
+  echo "hello"
+}
+
+main

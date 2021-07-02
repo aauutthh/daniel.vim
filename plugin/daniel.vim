@@ -48,3 +48,7 @@ augroup Templates
     \| silent %s/<%=\(.\{-}\)%>/\=eval(submatch(1))/ge 
     \| endif
 augroup end
+
+" help vim
+" 设置modeline支持
+set modeline
