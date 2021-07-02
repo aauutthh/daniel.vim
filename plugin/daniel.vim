@@ -1,3 +1,4 @@
+:scriptencoding utf-8
 if exists('g:daniel_vim_pluged')
   finish
 endif
@@ -22,7 +23,28 @@ command! -range Source :<line1>,<line2>y x | :@x
 
 "nmap ,date :. !date +"\# \%Y-\%m-\%d \%H:\%M:\%S"<CR>
 nmap ,date :call setline(line('.'), getline('.') ." ". strftime("%Y-%m-%d %H:%M:%S"))<CR>
-let g:syntastic_quiet_messages = {
-    \ "regex":   ['MD013'],
-    \ "file:p":  ['\m^/usr/include/', '\m\c\.h$'] }
 
+" 语法检查时忽略的错误
+let g:syntastic_quiet_messages = {
+    \ 'regex':   ['MD013', 'MD033'],
+    \ 'file:p':  ['\m^/usr/include/', '\m\c\.h$'] }
+
+
+" markdown 文件保存时去除末尾空格
+augroup markdown_trim_space
+  autocmd!
+  " :ks 当前位置记号为s, 方便跳回
+  autocmd BufWritePre *.md ks|%s/\s\+$//ge|'s
+augroup END
+
+" auto use templates
+" 新建文件时自动使用模板
+augroup Templates
+  autocmd!
+  " 模板替换算法: [template.vim](https://www.vim.org/scripts/script.php?script_id=2834)
+  autocmd BufNewFile *.*  let b:tpl = daniel#TemplatesPath(). '/skeleton.'.expand('%:e')
+    \| if filereadable(b:tpl) 
+    \| exec "0r ".b:tpl 
+    \| silent %s/<%=\(.\{-}\)%>/\=eval(submatch(1))/ge 
+    \| endif
+augroup end

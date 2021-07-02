@@ -1,3 +1,4 @@
+scriptencoding utf8
 " (C) Copyright 2019 all rights reserved
 " File              : daniel.vim
 " Author            : Daniel Li <authendic@163.com>
@@ -21,11 +22,27 @@ endif
 let g:daniel_vim_loaded = 1
 
 " script path
-let s:spath = resolve(expand("<sfile>:p:h"))
+let s:spath = resolve(expand('<sfile>:p:h'))
+let s:sdanielhome = fnamemodify(s:spath, ':h')
 
-function daniel#Path() 
+function daniel#AutoPath() 
 "{{{
   return s:spath
+endfunction "}}}
+
+function daniel#Home() 
+"{{{
+  return s:sdanielhome
+endfunction "}}}
+
+function daniel#TemplatesPath() 
+"{{{
+  return s:sdanielhome . '/templates'
+endfunction "}}}
+
+function daniel#PythonStubPath() 
+"{{{
+  return s:sdanielhome . '/modules/python3/stub'
 endfunction "}}}
 
 ""
@@ -80,7 +97,10 @@ function! daniel#PlugManagerInstall()
     if empty(glob('~/.vim/autoload/plug.vim'))
         silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
                     \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+        augroup PlugInstallAtFirstRun
+          autocmd!
+          autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+        augroup end
     endif
 endfunction "}}}
 
@@ -102,7 +122,7 @@ function! daniel#PlugIns()
   Plug 'ternjs/tern_for_vim', { 'do': 'npm install' }
   Plug 'davidhalter/jedi-vim'
   " jedi 默认会绑定\r, 这里改为空就不会绑定
-  let g:jedi#rename_command = ""
+  let g:jedi#rename_command = ''
   Plug 'vim-scripts/taglist.vim'
   Plug 'majutsushi/tagbar'
   Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
@@ -123,6 +143,12 @@ function! daniel#PlugIns()
 
   " 该模块还有后续安装步骤，见 daniel#ForYCMConfig
   Plug 'ycm-core/YouCompleteMe' , { 'do' : 'git submodule update --init --recursive' }
+  
+  " perl补全
+  Plug 'vim-perl/vim-perl', { 'for': 'perl', 'do': 'make clean carp dancer highlight-all-pragmas moose test-more try-tiny' }
+
+  " 使用makefile生成.ycm_extra_conf.py
+  Plug 'rdnetto/YCM-Generator', {'branch': 'stable'}
 
   " ctrl-w_o 放大一个窗口，两次输入回复窗口。 原生的only window无法恢复窗口
   Plug 'vim-scripts/ZoomWin'
@@ -171,7 +197,7 @@ endfunction "}}}
 " 4. 该函数会被自动调用，如果发现|plug#begin| |plug#end|被运行过，则给出修改建议
 function! daniel#InstallPlugIns()
 "{{{
-if exists("g:plugs") && len(g:plugs) > 0 
+if exists('g:plugs') && len(g:plugs) > 0 
   call s:recallerr_hint()
   return
 endif
@@ -182,13 +208,13 @@ endif
 " 重定义plug#函数，以免被二次调用
 " {{{
   function! plug#begin(...)
-    echohl WarningMsg|echom "recall plug#begin" | echohl None
+    echohl WarningMsg|echom 'recall plug#begin' | echohl None
   endfunction
   function! plug#end(...)
   call s:recallerr_hint()
   endfunction
   function! plug#(...)
-    echohl WarningMsg|echom "redo command Plug ". a:000[0] | echohl None
+    echohl WarningMsg|echom 'redo command Plug '. a:000[0] | echohl None
   endfunction
 " end redefine for cover
 " }}}
@@ -198,15 +224,15 @@ endfunction "}}}
 function! s:recallerr_hint()
 "{{{
   echohl WarningMsg
-  echom "modify `plug` add daniel#PlugIns like below:"
-  echom "```vim"
-  echom "call plug#begin()"
-  echom "call daniel#PlugIns()"
-  echom "call plug#end()"
-  echom "call daniel#VimConfig(0) \" without auto plugins"
-  echom "```"
-  echom "and restart"
-  echom "daniel#VimConfig(1) will call daniel#PlugIns() inner"
+  echom 'modify `plug` add daniel#PlugIns like below:'
+  echom '```vim'
+  echom 'call plug#begin()'
+  echom 'call daniel#PlugIns()'
+  echom 'call plug#end()'
+  echom 'call daniel#VimConfig(0) \" without auto plugins'
+  echom '```'
+  echom 'and restart'
+  echom 'daniel#VimConfig(1) will call daniel#PlugIns() inner'
   echohl None
   return
 endfunction "}}}
@@ -236,7 +262,10 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForPhpConfig()
   call daniel#ForPythonConfig() 
 
+  augroup DanielFileTypeChange
+  autocmd!
   autocmd FileType * call daniel#FileTypeChange()
+  augroup end
 
   com! MarkdownPrintCode call daniel#MarkdownPrintCode()
   
@@ -248,7 +277,7 @@ function! daniel#VimConfig(doInstall,...)
     call daniel#InstallPlugIns()
   endif
 
-  exec "set rtp+=".fnamemodify(s:spath,":h")."/after"
+  exec 'set rtp+='.fnamemodify(s:spath,':h').'/after'
 
   " themes选择必须在插件适配后才可以
   " 颜色模式会根据终端类型而不同为
@@ -270,7 +299,7 @@ function! daniel#CommondConfig()
   source $VIMRUNTIME/defaults.vim
   source $VIMRUNTIME/vimrc_example.vim
   
-  set nocompatible
+  "set nocompatible
   set fileformat=unix
   set nu  " number
   set noautoindent
@@ -290,16 +319,16 @@ function! daniel#CommondConfig()
   "set go=e
   
   if has('unix') 
-    let s:Paths["tmpdir"] = "/tmp/vim_".$USER."/"
-    if !isdirectory(s:Paths["tmpdir"])
-      call mkdir(s:Paths["tmpdir"],"p","0750")
+    let s:Paths['tmpdir'] = '/tmp/vim_'.$USER.'/'
+    if !isdirectory(s:Paths['tmpdir'])
+      call mkdir(s:Paths['tmpdir'],'p','0750')
     endif
   end
-  let &g:undodir=s:Paths["tmpdir"] 
-  let &g:backupdir=s:Paths["tmpdir"]. "," .&g:backupdir
+  let &g:undodir=s:Paths['tmpdir'] 
+  let &g:backupdir=s:Paths['tmpdir']. ',' .&g:backupdir
   " directory 用于swapfile , 当结尾是'//'时，使用绝对路径，避免swapfile collisions冲突
   " 用:sw 查看当前的swapfile
-  let &g:directory=s:Paths["tmpdir"]. "/," .&g:directory
+  let &g:directory=s:Paths['tmpdir']. '/,' .&g:directory
   
   set nobackup
   set autochdir
@@ -351,7 +380,7 @@ endfunction "}}}
 function! daniel#TagConfig() 
 "{{{
   " 设定ctags程序位置
-  let g:Tlist_Ctags_Cmd = "/usr/bin/ctags"
+  let g:Tlist_Ctags_Cmd = '/usr/bin/ctags'
   
   " 不同时显示多个文件的tag，只显示当前文件的
   let g:Tlist_Show_One_File = 1
@@ -429,30 +458,33 @@ function! daniel#TagConfig()
 
   "}}}
 
+  augroup FileTypeTagBar
+  autocmd!
   "autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
   autocmd FileType python,c,cpp,go :TagbarOpen
   autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :TagbarOpen
   autocmd VimEnter *.vim*,*.go :TagbarOpen
   autocmd FileType typescript :set makeprg=tsc
+  augroup end
 endfunction "}}}
 
-let g:project_top= ""
+let g:project_top= ''
 function! s:Project_vimrc()
 "{{{
   let l:prjtop = s:GetProjectTop()
   let g:project_top = l:prjtop
-  " let l:topvimrc=findfile(".vimrc",".;")
-  let l:topvimrc=l:prjtop."/.vimrc"
+  " let l:topvimrc=findfile('.vimrc','.;')
+  let l:topvimrc=l:prjtop.'/.vimrc'
   if !filereadable(l:topvimrc)
     return
   endif
   " 需避免运行其他用户的vimrc文件
-  if l:topvimrc != "" 
-      let l:homevimrc= fnamemodify("~/.vimrc", ":p")
+  if l:topvimrc !=# ''
+      let l:homevimrc= fnamemodify('~/.vimrc', ':p')
       if l:topvimrc != l:homevimrc
-          echom "find proj vim: ".l:topvimrc
-          exec "source ".l:topvimrc
+          echom 'find proj vim: '.l:topvimrc
+          exec 'source '.l:topvimrc
       endif
   endif
 
@@ -463,13 +495,13 @@ endfunction "}}}
 " 兼容使用 g:gutentags_project_root = ['...']
 function! s:GetProjectTop()
 "{{{
-if exists("*gutentags#get_project_root")
+if exists('*gutentags#get_project_root')
     return gutentags#get_project_root(expand('%:p:h', 1))
 endif
 try
     return gutentags#get_project_root(expand('%:p:h', 1))
 catch "/.*/
-    "echom "error:".v:exception
+    "echom 'error:'.v:exception
     return expand('%:p:h', 1)
 endtry
 endfunction "}}}
@@ -477,38 +509,45 @@ endfunction "}}}
 function! s:GOPATH_Add_project_dir()
 "{{{
   " 从当前路径向上查找.gotop文件,作为根路径
-  let l:top=findfile(".gotop",".;")
-  if l:top==""
+  let l:top=findfile('.gotop','.;')
+  if l:top==#''
       " 从当前路径向上查找src目录 , src与.gotop同级
-      let l:top=finddir("src",".;")
+      let l:top=finddir('src','.;')
   endif
-  if l:top==""
+  if l:top==#''
       return 
   endif
   
   " 取目录
-  let l:top = fnamemodify(l:top, ":h")
-  let l:paths=split($GOPATH,":")
+  let l:top = fnamemodify(l:top, ':h')
+  let l:paths=split($GOPATH,':')
   if index(l:paths, l:top) >0 
       return 
   endif
 
-  exec "GoPath ".l:top . ":" . $GOPATH
-  "let $GOPATH = l:top . ":" . $GOPATH
+  " use :GoPah command to set GOPATH env
+  exec 'GoPath '.l:top . ':' . $GOPATH
+  "let $GOPATH = l:top . ':' . $GOPATH
 
 endfunction "}}}
 
 function! daniel#ForClangConfig() 
 "{{{
+  augroup ClangRc
+  autocmd!
   "autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :set tags+=./tags;
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s :call s:Project_vimrc()
+  augroup end
 endfunction "}}}
 
 function! daniel#ForGolangConfig() 
 "{{{
   " 用vimenter时机比gopls慢，导致设置GOPATH前gopls就启动了
+  augroup GolangRc
+  autocmd!
   "autocmd VimEnter *.go :call s:GOPATH_Add_project_dir()
   autocmd FileType go :call s:GOPATH_Add_project_dir()
+  augroup end
   let g:go_highlight_types = 1
   let g:go_highlight_functions = 1
   let g:go_highlight_fields = 1
@@ -519,8 +558,8 @@ endfunction "}}}
 function! s:PythonAutoSettingPost() 
 "{{{
   setlocal omnifunc-=preview 
-  let s:pythonpath = fnamemodify(s:spath,":h") . "/modules/python3/site-packages"
-  "exec ":badd ".s:pythonpath . "/_.py" 
+  let s:pythonpath = fnamemodify(s:spath,':h') . '/modules/python3/site-packages'
+  "exec ':badd '.s:pythonpath . '/_.py' 
   py3 << EOF
 # hook for ycm 
 import os
@@ -580,7 +619,7 @@ endfunction "}}}
 
 function! daniel#ForPythonConfigPost() 
 "{{{
-  call s:PythonAutoSettingPost()
+  "call s:PythonAutoSettingPost()
 endfunction "}}}
 
 function! daniel#ForPythonConfig() 
@@ -596,6 +635,9 @@ function! daniel#ForPythonConfig()
 " \         'filetypes': [ 'python' ]
 " \         }
 " \         ]
+
+let l:pythonpath=daniel#PythonStubPath(). ':' . $PYTHONPATH
+let $PYTHONPATH=l:pythonpath
 
 set statusline+=%#warningmsg#
 set statusline+=%{SyntasticStatuslineFlag()}
@@ -658,11 +700,11 @@ function! daniel#DoxygenConfig()
   "let g:DoxygenToolkit_briefTag_pre="@Synopsis  "
   "let g:DoxygenToolkit_paramTag_pre="@Param "
   "let g:DoxygenToolkit_returnTag="@Returns   "
-  let s:blockbound="----------------------------------------------------------------------------"
+  let s:blockbound='----------------------------------------------------------------------------'
   let g:DoxygenToolkit_blockHeader=s:blockbound
   let g:DoxygenToolkit_blockFooter=s:blockbound
-  let g:DoxygenToolkit_authorName="Daniel Li"
-  let g:DoxygenToolkit_licenseTag="(C) Copyright ". strftime("%Y")
+  let g:DoxygenToolkit_authorName='Daniel Li'
+  let g:DoxygenToolkit_licenseTag='(C) Copyright '. strftime('%Y')
 endfunction "}}}
 
 ""
@@ -672,7 +714,7 @@ function! daniel#VimHeaderConfig()
   let g:header_auto_add_header = 0
   let g:header_field_author = 'Daniel Li'
   let g:header_field_author_email = 'authendic@163.com'
-  let g:header_field_copyright = '(C) Copyright '.strftime("%Y")." all rights reserved"
+  let g:header_field_copyright = '(C) Copyright '.strftime('%Y').' all rights reserved'
   let g:header_field_timestamp_format = '%Y-%m-%d'
   " map <F4> :AddHeader<CR>
 endfunction "}}}
@@ -718,14 +760,17 @@ function! daniel#ForYCMConfig ()
   " https://github.com/ycm-core/YouCompleteMe/issues/2870
   let g:ycm_python_binary_path='python3'
 
-    if !exists("g:ycm_semantic_triggers")
+    if !exists('g:ycm_semantic_triggers')
     let g:ycm_semantic_triggers = {}
     endif
     "let g:ycm_semantic_triggers['typescript'] = ['.']
 
     " for Plug 'Quramy/tsuquyomi'
     let g:tsuquyomi_completion_detail = 1
+    augroup TypescriptRc
+    autocmd!
     autocmd FileType typescript setlocal completeopt+=menu,preview
+    augroup end
 
 
   ""
@@ -734,7 +779,10 @@ function! daniel#ForYCMConfig ()
   " 其中最重要的接口是: FlagsForFile( filename, **kwargs )
   " 每打开一次文件，ycm就会调用这个接口一次，以决定该文件使用的clang编译flags
   "let g:ycm_global_ycm_extra_conf='~/.vim/plugged/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
+  augroup ClangYcmConfig
+  autocmd!
   autocmd FileType c,cpp let g:ycm_global_ycm_extra_conf='~/.vim/.ycm_extra_conf.py'
+  augroup end
 
 
   " ycm 切换下一个error
@@ -771,9 +819,9 @@ endfunction "}}}
 function! daniel#FileTypeChange()
 "{{{
 "echom "ft change to ".&ft
-  if (&ft == "vim")
+  if (&ft ==? 'vim')
     set fdm=marker
-  elseif(&ft == "python")
+  elseif(&ft ==? 'python')
     set fdm=indent
   endif
 endfunction "}}}
@@ -815,6 +863,7 @@ endfunction
 
 function! daniel#MarkdownPrintCode()
 "{{{
+  " 把mardown的内容输出到terminal 的 stdout, 供复制
   let oldpos = getcurpos()
 
   call cursor(oldpos[1]-1,0)
@@ -834,7 +883,7 @@ function! daniel#MarkdownPrintCode()
     return
   endif
 
-  exec ":".posA[0].",".posB[0]."w !cut -c ".(space[1]+1)."-"
+  exec ':'.posA[0].','.posB[0].'w !cut -c '.(space[1]+1).'-'
 
 "}}}
 endfunction
@@ -842,7 +891,7 @@ endfunction
 function! s:Previewwindow_open(name) 
 "{{{
     pclose
-    exe "botright 4new " . a:name
+    exe 'botright 4new ' . a:name
     setlocal buftype=nofile bufhidden=delete noswapfile nowrap previewwindow
     redraw
 endfunction 
@@ -851,20 +900,20 @@ endfunction
 function! s:Previewwindow_run(cmd) 
 "{{{
     try
-    let l:cmd = substitute(a:cmd, '%\(:[phtre]\)*' ,'\=expand(submatch(0))',"g")
-    let l:cmd = substitute(l:cmd, '<\w\+>\(:[phtre]\)*' ,'\=expand(submatch(0))',"g")
+    let l:cmd = substitute(a:cmd, '%\(:[phtre]\)*' ,'\=expand(submatch(0))','g')
+    let l:cmd = substitute(l:cmd, '<\w\+>\(:[phtre]\)*' ,'\=expand(submatch(0))','g')
     let l:msg=systemlist(l:cmd)
     if len(msg)
-        call s:Previewwindow_open("__run__")
+        call s:Previewwindow_open('__run__')
         call append(line('$'), l:msg)
-        normal dd
+        normal! dd
         call cursor(line('$'),1)
         wincmd p
      else
-         echo "No output."
+         echo 'No output.'
      endif
      catch
-        echohl Error | echo "Run-time error." | echohl none
+        echohl Error | echo 'Run-time error.' | echohl none
      endtry
 endfunction 
 "}}}
