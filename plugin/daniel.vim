@@ -34,7 +34,8 @@ let g:syntastic_quiet_messages = {
 augroup markdown_trim_space
   autocmd!
   " :ks 当前位置记号为s, 方便跳回
-  autocmd BufWritePre *.md ks|%s/\s\+$//ge|'s
+  autocmd BufWritePre *.md ks|%s/\s\+$//ge
+      \|%s/\t/    /ge|'s
 augroup END
 
 " auto use templates

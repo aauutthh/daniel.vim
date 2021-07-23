@@ -4,7 +4,7 @@ date:   <%=strftime('%Y-%m-%d')%>
 author: danielli
 description:
 options:
-  vim: colorcolumn=81
+  vim: colorcolumn=80
 tags:
   - tag1
 ---
