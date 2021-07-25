@@ -56,11 +56,24 @@ augroup end
 " 设置modeline支持
 set modeline
 
-function AutoGitSave()
+function s:NeedGitSave()
     "call system('git ls-files '.expand('%:p').' > /dev/null 2>&1')
     call system('git ls-files --error-unmatch -- '.expand('%:p').' > /tmp/11 2>&1')
     if v:shell_error
-        return
+        return v:false
+    endif
+    let s:diffnumstat = system('git diff --numstat '.expand('%:p'))
+    let s:addlinenum = str2nr(split(s:diffnumstat.'0', '\s\+')[0])
+    " 差异数达到10行才自动提交，避免频繁提交
+    if s:addlinenum < 10
+      return v:false
+    endif
+    return v:true
+endfunction
+
+function s:AutoGitSave()
+    if ! s:NeedGitSave()
+      return
     endif
     let s:message = 'vim-AutoComit ' . expand('%:.')
     call system('git add ' . expand('%:p'))
@@ -71,5 +84,11 @@ endfunction
 " 保存时自动在git提交文件
 augroup GitSaveGrp
   autocmd!
-  autocmd BufWritePost *.vim,*.md call AutoGitSave()
+  autocmd BufWritePost *.vim,*.md call s:AutoGitSave()
 augroup end
+
+" Tabularize 
+" Tabularize  for markdown table 
+" :'<,'>Tabularize M<Tab>
+AddTabularPattern MdTable /|/l0
+

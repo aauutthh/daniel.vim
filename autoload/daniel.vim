@@ -125,7 +125,10 @@ function! daniel#PlugIns()
   let g:jedi#rename_command = ''
   Plug 'vim-scripts/taglist.vim'
   Plug 'majutsushi/tagbar'
-  Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } " 对齐工具 Tab /=
+  " 对齐工具 Tab /=
+  " 加 on 不会自动加载
+  "Plug 'godlygeek/tabular' , { 'on': 'Tabularize' } 
+  Plug 'godlygeek/tabular'
   "Plug 'vim-scripts/DoxygenToolkit.vim'
   Plug 'alpertuna/vim-header'
   Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
@@ -288,6 +291,7 @@ function! daniel#VimConfig(doInstall,...)
   colo seoul256
   call daniel#UtilCommands()
 
+  
 endfunction "}}}
 
 let s:Paths = {}
