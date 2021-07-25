@@ -894,6 +894,22 @@ function! daniel#MarkdownPrintCode()
 "}}}
 endfunction
 
+function! daniel#TrimAndRun(command, ...) range
+"{{{
+  let l:range = a:firstline . ',' . a:lastline
+  let l:cut = match(getline(a:firstline), '\w')
+  exec range . 'w !cut -c '.(l:cut + 1).'- |'.a:command
+"}}}
+endfunction
+
+" 选中区域交给perl解释器运行
+" command! -range -nargs=0 PerlRun :<line1>,<line2>w !perl
+command!  -range -nargs=0 PerlRun 
+    \ <line1>,<line2>call daniel#TrimAndRun('perl')
+
+command!  -range -nargs=0 PythonRun 
+    \ <line1>,<line2>call daniel#TrimAndRun('python')
+
 function! s:Previewwindow_open(name) 
 "{{{
     pclose

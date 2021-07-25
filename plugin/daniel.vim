@@ -14,8 +14,6 @@ command! -range -nargs=1 BashFilter :<line1>,<line2>w !bash -c <args>
 
 command! -range -nargs=0 ShRun :<line1>,<line2>w !sh
 command! -range -nargs=0 BashRun :<line1>,<line2>w !bash
-" 选中区域交给perl解释器运行
-command! -range -nargs=0 PerlRun :<line1>,<line2>w !perl
 
 ""
 " 小写source 执行文件
