@@ -897,7 +897,7 @@ endfunction
 function! daniel#TrimAndRun(command, ...) range
 "{{{
   let l:range = a:firstline . ',' . a:lastline
-  let l:cut = match(getline(a:firstline), '\w')
+  let l:cut = match(getline(a:firstline), '\S')
   exec range . 'w !cut -c '.(l:cut + 1).'- |'.a:command
 "}}}
 endfunction
@@ -909,6 +909,9 @@ command!  -range -nargs=0 PerlRun
 
 command!  -range -nargs=0 PythonRun 
     \ <line1>,<line2>call daniel#TrimAndRun('python')
+
+command!  -range -nargs=0 Cat
+    \ <line1>,<line2>call daniel#TrimAndRun('cat')
 
 function! s:Previewwindow_open(name) 
 "{{{
