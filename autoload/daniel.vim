@@ -134,6 +134,7 @@ function! daniel#PlugIns()
   Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
 
   " 自动生成tag文件, 自动查找项目顶层目录
+  " https://www.zhihu.com/question/47691414
   Plug 'ludovicchabant/vim-gutentags'
 
   " typescript https://github.com/Microsoft/TypeScript/wiki/TypeScript-Editor-Support#vim
@@ -407,8 +408,8 @@ function! daniel#TagConfig()
   " \ }
   
   "{{{ gutentags 自动生成tags 文件
-  " 设置顶层目录标志文件, 自动查找项目顶层
-  let g:gutentags_project_root = ['.gutctags','.root','.top']
+  " 设置顶层目录标志文件, 自动(向上)查找项目顶层
+  let g:gutentags_project_root = ['.gutctags','.root','.top', '.git', '.hg', '.project']
   "let g:gutentags_dont_load=1 
   let g:gutentags_enabled = 1 
 
@@ -419,10 +420,23 @@ function! daniel#TagConfig()
   " --exclude=*bin*
 
   " 设置cache目录有助于集中管理tags, 但是tag搜索需要更多配置，gutentags没有提供项目tags名称的接口
-  "let g:gutentags_cache_dir="~/ctags"
+  " 将自动生成的 tags 文件全部放入 ~/.cache/tags 目录中，避免污染工程目录
+  let g:gutentags_cache_dir = expand('~/.cache/tags')
+  if !isdirectory(g:gutentags_cache_dir)
+    silent! call mkdir(g:gutentags_cache_dir, 'p')
+  endif
 
+  " 设置生成tag索引文件的名称
   " 为使文件不污染svn目录，使用'.'前缀
   let g:gutentags_ctags_tagfile = '.tags'
+
+  " 配置 ctags 参数
+  let g:gutentags_ctags_extra_args = [
+    \ '--fields=+niazS', 
+    \ '--extra=+q',
+    \ '--c++-kinds=+px',
+    \ '--c-kinds=+px',
+  ]
   "}}}
 
   "{{{
