@@ -134,7 +134,7 @@ function! daniel#PlugIns()
   Plug 'lvht/phpcd.vim', { 'for': 'php', 'do': 'composer install' }
 
   " 自动生成tag文件, 自动查找项目顶层目录
-  " https://www.zhihu.com/question/47691414
+  " 参考配置: https://www.zhihu.com/question/47691414
   Plug 'ludovicchabant/vim-gutentags'
 
   " typescript https://github.com/Microsoft/TypeScript/wiki/TypeScript-Editor-Support#vim
@@ -172,7 +172,10 @@ function! daniel#PlugIns()
 
   Plug 'morhetz/gruvbox'
 
-  Plug 'vim-syntastic/syntastic'
+  " https://www.zhihu.com/question/47691414 这里说syntastic太老了，也不实时
+  " 建议用ale
+  " Plug 'vim-syntastic/syntastic'
+  Plug 'w0rp/ale'
 
   " python mypy checker
   " Plug 'integralist/vim-mypy', { 'for': 'python' }
@@ -265,6 +268,7 @@ function! daniel#VimConfig(doInstall,...)
   call daniel#ForTernJsConfig() 
   call daniel#ForPhpConfig()
   call daniel#ForPythonConfig() 
+  call daniel#ForAle() 
 
   augroup DanielFileTypeChange
   autocmd!
@@ -432,11 +436,11 @@ function! daniel#TagConfig()
 
   " 配置 ctags 参数
   let g:gutentags_ctags_extra_args = [
-    \ '--fields=+niazS', 
+    \ '--fields=+niazS',
     \ '--extra=+q',
     \ '--c++-kinds=+px',
     \ '--c-kinds=+px',
-  ]
+  \ ]
   "}}}
 
   "{{{
@@ -640,6 +644,45 @@ function! daniel#ForPythonConfigPost()
   "call s:PythonAutoSettingPost()
 endfunction "}}}
 
+function! daniel#ForAle() 
+"{{{
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_python_checkers = ['mypy']
+" 设置mdl(markdownlint) exec的参数，不检查markdown front matters头部要素
+let g:syntastic_markdown_mdl_args = '--ignore_front_matter'
+
+let g:ale_linters_explicit = 1
+let g:ale_completion_delay = 500
+let g:ale_echo_delay = 20
+let g:ale_lint_delay = 500
+let g:ale_echo_msg_format = '[%linter%] %code: %%s'
+let g:ale_lint_on_text_changed = 'normal'
+let g:ale_lint_on_insert_leave = 1
+let g:airline#extensions#ale#enabled = 1
+
+let g:ale_c_gcc_options = '-Wall -O2 -std=c99'
+let g:ale_cpp_gcc_options = '-Wall -O2 -std=c++14'
+let g:ale_c_cppcheck_options = ''
+let g:ale_cpp_cppcheck_options = ''
+
+let g:ale_sign_error = "\ue009\ue009"
+hi! clear SpellBad
+hi! clear SpellCap
+hi! clear SpellRare
+hi! SpellBad gui=undercurl guisp=red
+hi! SpellCap gui=undercurl guisp=blue
+hi! SpellRare gui=undercurl guisp=magenta
+
+
+endfunction "}}}
+
 function! daniel#ForPythonConfig() 
 "{{{
 " let g:jedi#completions_command = "<c-o>"
@@ -656,18 +699,6 @@ function! daniel#ForPythonConfig()
 
 let l:pythonpath=daniel#PythonStubPath(). ':' . $PYTHONPATH
 let $PYTHONPATH=l:pythonpath
-
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_python_checkers = ['mypy']
-" 设置mdl(markdownlint) exec的参数，不检查markdown front matters头部要素
-let g:syntastic_markdown_mdl_args = '--ignore_front_matter'
 
 endfunction "}}}
 
