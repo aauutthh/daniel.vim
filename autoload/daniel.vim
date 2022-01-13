@@ -174,8 +174,8 @@ function! daniel#PlugIns()
 
   " https://www.zhihu.com/question/47691414 这里说syntastic太老了，也不实时
   " 建议用ale
-  " Plug 'vim-syntastic/syntastic'
-  Plug 'w0rp/ale'
+  Plug 'vim-syntastic/syntastic'
+  " Plug 'w0rp/ale'
 
   " python mypy checker
   " Plug 'integralist/vim-mypy', { 'for': 'python' }
@@ -192,6 +192,10 @@ function! daniel#PlugIns()
   " for typescript
   " http://blog.88mph.io/2017/11/08/equipping-vim-for-typescript-a-newcomers-guide/
   Plug 'leafgarland/typescript-vim'
+
+  " https://github.com/chrisbra/unicode.vim
+  " https://x-team.com/blog/inserting-unicode-characters-in-vim/
+  Plug 'chrisbra/unicode.vim'
   
 endfunction "}}}
 
@@ -342,6 +346,9 @@ function! daniel#CommondConfig()
   set nobackup
   set autochdir
   set ignorecase smartcase
+  if &diff
+  set wrap
+  endif
   set nowrapscan
   "set linebreak
   
@@ -483,10 +490,12 @@ function! daniel#TagConfig()
   augroup FileTypeTagBar
   autocmd!
   "autocmd FileType python,c,cpp,go let g:Tlist_Auto_Open = 1
+  if !&diff
   autocmd FileType python,c,cpp,go :TagbarOpen
   autocmd FileType go let g:Tlist_Ctags_Cmd="gotags" | let g:gutentags_dont_load=1 | let g:gutentags_enabled = 0 
   autocmd VimEnter *.cpp,*.h,*.hpp,*.c,*.cc,*.mq4,*.s,*.py let g:gutentags_enabled = 1 | :TagbarOpen
   autocmd VimEnter *.vim*,*.go :TagbarOpen
+  endif
   autocmd FileType typescript :set makeprg=tsc
   augroup end
 endfunction "}}}
