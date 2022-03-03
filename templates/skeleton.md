@@ -13,18 +13,23 @@ Wiki:
     export APPKEY=key
     export APPSEC=sec
     python -m "wikiapi.postmd" <%=expand('%:t')%>
+  plugins:
+    - name: imgupload
+      module: wikiapi.wikiplugins.LocalImgUpload
 options:
   vim: colorcolumn=80
 tags:
   - tag1
 ---
 
-# 修订记录
+# <%=expand('%:t:r')%>
+
+## 修订记录
 
 时间      |作者    |修改
 -----     |-----   |-----
 <%=strftime('%Y-%m-%d')%>|danielli|初稿
 
-# 第一节
+## 第一节
 
-# 参考
+## 参考
