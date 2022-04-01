@@ -95,8 +95,10 @@ endfunction "}}}
 function! daniel#PlugManagerInstall()
 "{{{
     if empty(glob('~/.vim/autoload/plug.vim'))
-        silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-                    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        "silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        "            \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        silent !git clone git@github.com:junegunn/vim-plug.git ~/.vim/autoload/vim-plug
+        silent !ln -sf  ~/.vim/autoload/vim-plug/plug.vim ~/.vim/autoload/plug.vim
         augroup PlugInstallAtFirstRun
           autocmd!
           autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
